@@ -2545,9 +2545,9 @@
         /**
          * Renders the authentic Whitney High School vertical student ID card layout onto Apple Wallet's
          * full-bleed poster canvas (1074x1344 @3x poster).
-         * Matches Image 2: dark canvas, light-rimmed CR80 card, yellow vertical brand strip,
-         * lanyard slot, crest, year/grade badges, claw scratch marks, gold-bordered portrait photo,
-         * vertical barcode, student name/ID, and the bottom white barcode dock with yellow border!
+         * Runs the bold yellow brand strip and deep navy card background continuously from top to bottom
+         * (0 to 1344px), with optimal vertical clearance so Apple Wallet's scannable barcode does not
+         * collide with the student name and ID!
          */
         function createWHSWalletPosterCanvas(width = 1074, height = 1344) {
             const c = document.createElement('canvas');
@@ -2555,216 +2555,150 @@
             c.height = height;
             const sCtx = c.getContext('2d');
 
-            // 0. Base dark canvas matching Image 2 background (#090d14)
-            sCtx.fillStyle = '#090d14';
-            sCtx.fillRect(0, 0, width, height);
-
-            const padX = Math.round(18 * (width / 882));
-            const padY = Math.round(18 * (height / 1400));
-            const dockH = Math.round(250 * (height / 1400));
-            const dockGap = Math.round(18 * (height / 1400));
-            const cardW = width - padX * 2;
-            const cardH = height - padY * 2 - dockH - dockGap;
-            const cardX = padX;
-            const cardY = padY;
-
-            // 1. Top CR80 Student ID Card
-            sCtx.save();
-            roundRectPath(sCtx, cardX, cardY, cardW, cardH, 44);
-            sCtx.fillStyle = '#eef0f2'; // Outer card edge border
-            sCtx.fill();
-
-            const inPad = 4;
-            const inX = cardX + inPad;
-            const inY = cardY + inPad;
-            const inW = cardW - inPad * 2;
-            const inH = cardH - inPad * 2;
-
-            sCtx.save();
-            roundRectPath(sCtx, inX, inY, inW, inH, 40);
-            sCtx.clip();
-
-            // Card interior dark navy (#1c232d)
-            sCtx.fillStyle = '#1c232d';
-            sCtx.fillRect(inX, inY, inW, inH);
-
-            // Subtle athletic white claw scratches across card
-            sCtx.save();
-            sCtx.translate(inX, inY);
-            sCtx.scale(inW / 882, inH / 1400);
-            drawDissectedClawScratches(sCtx);
-            sCtx.restore();
-
-            // Bold Golden-Yellow Vertical Brand Strip on the left
-            const stripW = Math.round(152 * (inW / 882));
+            // 1. Bold Golden-Yellow Vertical Brand Strip on the left (runs 100% top to bottom!)
+            const stripW = Math.round(152 * (width / 882)); // ~185px
             sCtx.fillStyle = '#f5dc00';
-            sCtx.fillRect(inX, inY, stripW, inH);
+            sCtx.fillRect(0, 0, stripW, height);
 
             // "WHITNEY HIGH SCHOOL" text in vertical yellow strip
             sCtx.save();
-            sCtx.translate(inX + stripW * 0.72, inY + inH / 2);
+            sCtx.translate(stripW * 0.70, height / 2);
             sCtx.rotate(-Math.PI / 2);
             sCtx.fillStyle = '#1c232d';
-            sCtx.font = `800 ${Math.round(80 * (inH / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+            sCtx.font = `800 ${Math.round(84 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
             sCtx.textAlign = 'center';
             const schoolTitle = (state.schoolName || 'WHITNEY HIGH SCHOOL').toUpperCase();
             const measuredW = sCtx.measureText(schoolTitle).width;
-            const targetSpan = inH * 0.90;
+            const targetSpan = height * 0.90;
             if (measuredW > 0) {
                 sCtx.scale(targetSpan / measuredW, 1.0);
             }
             sCtx.fillText(schoolTitle, 0, 0);
             sCtx.restore();
 
-            // Content center axis (aligned with lanyard slot, crest, photo, name)
-            const centerAxisX = inX + stripW + (inW - stripW) * 0.42;
+            // 2. Deep Navy Card Body on the right (#1c232d, runs 100% top to bottom!)
+            const cardBodyW = width - stripW;
+            sCtx.fillStyle = '#1c232d';
+            sCtx.fillRect(stripW, 0, cardBodyW, height);
 
-            // Lanyard slot cutout at top center
-            const slotW = Math.round(196 * (inW / 882));
-            const slotH = Math.round(48 * (inH / 1400));
+            // Subtle athletic white claw scratches across card body
+            sCtx.save();
+            sCtx.translate(stripW, 0);
+            sCtx.scale(cardBodyW / 752, height / 1400);
+            drawDissectedClawScratches(sCtx);
+            sCtx.restore();
+
+            // Symmetrically balance student card elements in available cardBodyW
+            const portW = Math.round(330 * (width / 882)); // ~400px
+            const portH = Math.round(410 * (height / 1400)); // ~393px
+            const vBarW = Math.round(92 * (width / 882));   // ~112px
+            const gap = Math.round(22 * (width / 882));      // ~26px
+            const groupW = portW + gap + vBarW;
+            const groupStartX = stripW + Math.round((cardBodyW - groupW) / 2);
+
+            const portX = groupStartX;
+            const portY = Math.round(200 * (height / 1400));
+            const vBarX = portX + portW + gap;
+            const vBarY = portY;
+
+            // Content center axis (aligned with slot, crest, photo, name, and student ID)
+            const centerAxisX = portX + portW / 2;
+
+            // 3. Lanyard slot cutout at top center
+            const slotW = Math.round(180 * (width / 882));
+            const slotH = Math.round(38 * (height / 1400));
             const slotX = centerAxisX - slotW / 2;
-            const slotY = inY + Math.round(42 * (inH / 1400));
+            const slotY = Math.round(28 * (height / 1400));
 
             sCtx.fillStyle = '#d8dee6';
-            roundRectPath(sCtx, slotX - 3, slotY - 3, slotW + 6, slotH + 6, 26);
+            roundRectPath(sCtx, slotX - 3, slotY - 3, slotW + 6, slotH + 6, 22);
             sCtx.fill();
 
             sCtx.fillStyle = '#090c10';
-            roundRectPath(sCtx, slotX, slotY, slotW, slotH, 24);
+            roundRectPath(sCtx, slotX, slotY, slotW, slotH, 20);
             sCtx.fill();
 
-            // Official Whitney High School Crest below slot
-            const crestScale = 0.86 * (inH / 1400);
-            const crestY = slotY + slotH + Math.round(12 * (inH / 1400));
+            // 4. Official Whitney High School Crest below slot
+            const crestScale = 0.72 * (height / 1400);
+            const crestY = slotY + slotH + Math.round(10 * (height / 1400));
             drawDissectedWHSCrestOnContext(sCtx, centerAxisX, crestY, crestScale);
 
-            // Top Right: School Year and Grade Badge
+            // 5. Top Right: School Year and Grade Badge
             const rawYear = (state.schoolYear || '').trim();
-            const rightColumnX = inX + inW - Math.round(112 * (inW / 882));
+            const rightColumnX = width - Math.round(85 * (width / 882));
             if (rawYear) {
                 sCtx.fillStyle = '#f5dc00';
-                sCtx.font = `800 ${Math.round(50 * (inH / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+                sCtx.font = `800 ${Math.round(44 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
                 sCtx.textAlign = 'center';
-                sCtx.fillText(rawYear, rightColumnX, inY + Math.round(102 * (inH / 1400)));
+                sCtx.fillText(rawYear, rightColumnX, Math.round(78 * (height / 1400)));
             }
 
             const gradeVal = state.grade && String(state.grade).trim();
-            const gBoxW = Math.round(130 * (inW / 882));
-            const gBoxH = Math.round(74 * (inH / 1400));
+            const gBoxW = Math.round(108 * (width / 882));
+            const gBoxH = Math.round(62 * (height / 1400));
             const gBoxX = rightColumnX - gBoxW / 2;
-            const gBoxY = inY + Math.round(148 * (inH / 1400));
+            const gBoxY = Math.round(112 * (height / 1400));
 
             sCtx.fillStyle = '#f5dc00';
             sCtx.fillRect(gBoxX, gBoxY, gBoxW, gBoxH);
 
             if (gradeVal) {
                 sCtx.fillStyle = '#1c232d';
-                sCtx.font = `800 ${Math.round(50 * (inH / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+                sCtx.font = `800 ${Math.round(44 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
                 sCtx.textAlign = 'center';
-                sCtx.fillText(gradeVal, gBoxX + gBoxW / 2, gBoxY + gBoxH * 0.72);
+                sCtx.fillText(gradeVal, gBoxX + gBoxW / 2, gBoxY + gBoxH * 0.74);
             }
 
-            // Student Portrait Photo with Yellow Border
-            const portW = Math.round(416 * (inW / 882));
-            const portH = Math.round(528 * (inH / 1400));
-            const portX = centerAxisX - portW / 2;
-            const portY = inY + Math.round(330 * (inH / 1400));
-
+            // 6. Student Portrait Photo with Yellow Border
             drawPortraitIntoRect(sCtx, portX, portY, portW, portH, false);
 
             sCtx.strokeStyle = '#f5dc00';
-            sCtx.lineWidth = Math.round(9 * (inW / 882));
+            sCtx.lineWidth = Math.round(8 * (width / 882));
             sCtx.strokeRect(portX, portY, portW, portH);
 
-            // Vertical Barcode to the right of Photo
-            const vBarX = portX + portW + Math.round(26 * (inW / 882));
-            const vBarW = Math.round(124 * (inW / 882));
-            const vBarH = portH;
-            const vBarY = portY;
-
+            // 7. Vertical Barcode to the right of Photo
             sCtx.fillStyle = '#ffffff';
-            sCtx.fillRect(vBarX, vBarY, vBarW, vBarH);
+            sCtx.fillRect(vBarX, vBarY, vBarW, portH);
 
             const hasStudentId = Boolean(getSanitizedBarcodeValue());
             const cardSideBarcode = document.getElementById('barcode39Canvas');
             if (hasStudentId && cardSideBarcode && cardSideBarcode.width > 0) {
                 sCtx.save();
-                sCtx.translate(vBarX + vBarW / 2, vBarY + vBarH / 2);
+                sCtx.translate(vBarX + vBarW / 2, vBarY + portH / 2);
                 sCtx.rotate(Math.PI / 2);
                 sCtx.imageSmoothingEnabled = false;
-                sCtx.drawImage(cardSideBarcode, -vBarH / 2 + 8, -vBarW / 2, vBarH - 16, vBarW);
+                sCtx.drawImage(cardSideBarcode, -portH / 2 + 8, -vBarW / 2, portH - 16, vBarW);
                 sCtx.restore();
             }
 
-            // Student Name and 6-digit ID below photo
+            // 8. Student Name and 6-digit ID below photo (fits cleanly above Apple Wallet barcode!)
             sCtx.textAlign = 'center';
             const first = (state.firstName || '').trim();
             const last = (state.lastName || '').trim();
             const idVal = (state.studentId || '').trim();
 
-            let textY = portY + portH + Math.round(48 * (inH / 1400));
+            let textY = portY + portH + Math.round(40 * (height / 1400));
             if (first) {
                 sCtx.fillStyle = '#ffffff';
-                sCtx.font = `700 ${Math.round(48 * (inH / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+                sCtx.font = `700 ${Math.round(44 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
                 sCtx.fillText(first, centerAxisX, textY);
-                textY += Math.round(52 * (inH / 1400));
+                textY += Math.round(46 * (height / 1400));
             }
             if (last) {
                 sCtx.fillStyle = '#ffffff';
-                sCtx.font = `700 ${Math.round(48 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+                sCtx.font = `700 ${Math.round(44 * (height / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
                 sCtx.fillText(last, centerAxisX, textY);
-                textY += Math.round(48 * (inH / 1400));
+                textY += Math.round(44 * (height / 1400));
             }
             if (idVal) {
-                sCtx.fillStyle = '#e5e7eb';
-                sCtx.font = `700 ${Math.round(42 * (inH / 1400))}px Arial, "Helvetica Neue", Inter, sans-serif`;
+                sCtx.fillStyle = '#f5dc00';
+                sCtx.font = `800 ${Math.round(36 * (height / 1400))}px "JetBrains Mono", monospace`;
                 sCtx.fillText(idVal, centerAxisX, textY);
             }
 
-            sCtx.restore(); // restore rounded clip
-            sCtx.restore(); // restore card state
-
-            // 2. Bottom White Barcode Dock with Horizontal Barcode (matching Image 2)
-            const dockX = cardX;
-            const dockY = cardY + cardH + dockGap;
-            const dockW = cardW;
-
-            sCtx.save();
-            sCtx.fillStyle = '#ffffff';
-            roundRectPath(sCtx, dockX, dockY, dockW, dockH, 36);
-            sCtx.fill();
-
-            sCtx.lineWidth = Math.round(6 * (width / 882));
-            sCtx.strokeStyle = '#f5dc00';
-            sCtx.stroke();
-
-            const activeBarcodeCanvas = state.barcodeMode === 'code128'
-                ? document.getElementById('barcode128Canvas')
-                : document.getElementById('barcode39Canvas');
-
-            if (hasStudentId && activeBarcodeCanvas && activeBarcodeCanvas.width > 0) {
-                const quietMarginX = Math.round(44 * (width / 882));
-                const barDrawW = dockW - quietMarginX * 2;
-                const barDrawH = dockH - Math.round(92 * (height / 1400));
-                const barDrawX = dockX + quietMarginX;
-                const barDrawY = dockY + Math.round(22 * (height / 1400));
-
-                sCtx.save();
-                sCtx.imageSmoothingEnabled = false;
-                sCtx.drawImage(activeBarcodeCanvas, barDrawX, barDrawY, barDrawW, barDrawH);
-                sCtx.restore();
-
-                sCtx.fillStyle = '#111827';
-                sCtx.font = `800 ${Math.round(38 * (height / 1400))}px "JetBrains Mono", monospace`;
-                sCtx.textAlign = 'center';
-                sCtx.fillText(idVal, dockX + dockW / 2, dockY + dockH - Math.round(18 * (height / 1400)));
-            } else {
-                sCtx.fillStyle = '#64748b';
-                sCtx.font = `800 ${Math.round(26 * (height / 1400))}px Inter, Arial, sans-serif`;
-                sCtx.textAlign = 'center';
-                sCtx.fillText('SCAN ID CARD TO AUTO-FILL BARCODE', dockX + dockW / 2, dockY + dockH / 2 + 10);
-            }
-            sCtx.restore();
+            // Note: The lower portion from textY to the bottom of the card is a clean dark navy background
+            // with the continuous yellow strip on the left. This provides the optimal landing canvas for
+            // Apple Wallet's native, high-contrast, scannable Code 128 barcode!
 
             return c;
         }
@@ -3041,21 +2975,18 @@
                 const payload = {
                     organizationName: 'Whitney High School',
                     description: 'Whitney High School Student ID',
-                    logoText: 'Whitney High School',
+                    logoText: ' ', // Empty space so Apple Wallet does NOT print "Whitn..." in the header bar!
                     barcodeValue: idCode,
                     barcodeFormat: 'Code128',
                     barcodeAltText: idCode,
                     backgroundURL: posterDataUrl, // Full vertical pass matching Image 2!
-                    logoURL: logoDataUrl,
                     iconURL: iconDataUrl,
                     foregroundColor: '#ffffff',
                     backgroundColor: '#1c232d',
                     labelColor: '#f5dc00',
                     primaryFields: [], // Leave pass face completely clean
                     secondaryFields: [], // No text overlay blocking card artwork
-                    headerFields: gradeNum ? [
-                        { key: 'grade', label: 'GRADE', value: String(gradeNum) }
-                    ] : [],
+                    headerFields: [], // Do NOT overlay "GRADE 11" so it does not collide with the card artwork!
                     backFields: [
                         {
                             key: 'studentName',
@@ -3176,14 +3107,12 @@
                     teamIdentifier: 'WHSWILDCAT',
                     organizationName: 'Whitney High School',
                     description: 'Whitney High School Student ID',
-                    logoText: 'Whitney High School',
+                    logoText: ' ',
                     foregroundColor: 'rgb(255, 255, 255)',
                     backgroundColor: 'rgb(28, 35, 45)',
                     labelColor: 'rgb(245, 220, 0)',
                     generic: {
-                        headerFields: state.grade ? [
-                            { key: 'grade', label: 'GRADE', value: String(state.grade) }
-                        ] : [],
+                        headerFields: [],
                         primaryFields: [],
                         secondaryFields: [],
                         backFields: [
@@ -3197,9 +3126,7 @@
                         ]
                     },
                     posterGeneric: {
-                        headerFields: state.grade ? [
-                            { key: 'grade', label: 'GRADE', value: String(state.grade) }
-                        ] : [],
+                        headerFields: [],
                         primaryFields: [],
                         secondaryFields: [],
                         backFields: [
