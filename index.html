@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#090d14">
     <meta name="format-detection" content="telephone=no">
-    <title>Whitney High School • Digital ID &amp; Apple Wallet</title>
+    <title>Whitney High School • Digital ID & Apple Wallet</title>
     <link id="appleTouchIconLink" rel="apple-touch-icon" href="">
     <link id="manifestLink" rel="manifest" href="">
 
@@ -132,31 +132,24 @@
 <body class="flex flex-col selection:bg-[#f5dc00] selection:text-slate-950">
 
     <!-- Minimalist Sticky Header -->
-    <header class="w-full border-b border-slate-800/80 bg-[#090d14]/90 backdrop-blur-md sticky top-0 z-30 safe-header">
-        <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+    <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-slate-950/85 border-b border-slate-800/80 px-4 py-2.5" style="padding-top: max(0.6rem, var(--safe-top));">
+        <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 shrink-0 rounded-xl bg-[#f5dc00] flex items-center justify-center text-slate-950 font-black shadow-md shadow-yellow-400/10">
-                    <span class="text-xs tracking-tighter font-black">WHS</span>
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1c232d] to-[#0c1017] border border-[#f5dc00]/40 flex items-center justify-center p-1 shrink-0 shadow">
+                    <canvas id="headerCrestCanvas" width="48" height="48" class="w-full h-full object-contain"></canvas>
                 </div>
                 <div class="min-w-0">
                     <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">
-                        Whitney High Digital ID
+                        Whitney High School
                     </h1>
+                    <p class="text-[10px] text-slate-400 font-medium truncate">Digital Student ID</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <button id="headerCameraBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 text-xs font-extrabold shadow transition active:scale-95">
-                    <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                    <span>Scan ID</span>
-                </button>
-                <button id="headerScanBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
+            <div class="flex items-center gap-2 shrink-0">
+                <button id="headerScanBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
                     <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                    <span>Pass</span>
-                </button>
-                <button id="headerShareBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
-                    <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                    <span class="hidden sm:inline">Save</span>
+                    <span>Fullscreen</span>
                 </button>
             </div>
         </div>
@@ -185,16 +178,17 @@
                 <button id="tapScanHintBtn" type="button" class="text-[#f5dc00] hover:underline font-semibold">Full-screen barcode</button>
             </div>
 
-            <!-- Primary Actions (Camera-First Scan + Add to Apple Wallet + Quick Actions) -->
-            <div class="w-full mt-3.5 space-y-2">
-                <!-- Primary Hero CTA: Scan Physical ID Card with Camera -->
-                <button id="openCameraScannerBtn" type="button" class="w-full py-3 px-4 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-black text-sm shadow-lg shadow-yellow-400/10 flex items-center justify-center gap-2.5 transition active:scale-[0.98]">
+            <!-- Primary Actions (Ultra-Simplified) -->
+            <div class="w-full mt-3.5 space-y-2.5">
+                <!-- 1. The ONLY Primary ID Scan Button (iOS Camera) -->
+                <button id="scanCameraBtn" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-black text-sm shadow-lg shadow-yellow-400/10 flex items-center justify-center gap-2.5 transition active:scale-[0.98]">
                     <i data-lucide="camera" class="w-5 h-5 shrink-0"></i>
-                    <span id="primaryScanBtnText">Scan ID Card with Camera</span>
+                    <span id="scanBtnText">Scan ID Card</span>
                 </button>
+                <input id="cameraCaptureInput" type="file" accept="image/*" capture="environment" class="hidden">
 
-                <!-- Apple Wallet Button -->
-                <button id="addToAppleWalletBtn" type="button" class="w-full py-3 px-4 rounded-2xl bg-black hover:bg-zinc-900 text-white font-bold text-sm border border-zinc-700/80 shadow-lg flex items-center justify-center gap-3 transition active:scale-[0.98]">
+                <!-- 2. Apple Wallet Button (Direct 1-Click Add) -->
+                <button id="addToAppleWalletBtn" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-black hover:bg-zinc-900 text-white font-bold text-sm border border-zinc-700/80 shadow-lg flex items-center justify-center gap-3 transition active:scale-[0.98]">
                     <svg class="w-5 h-5 shrink-0" viewBox="0 0 28 28" fill="none" aria-hidden="true">
                         <rect x="2" y="4" width="24" height="20" rx="4.5" fill="#1c1c1e" stroke="#52525b" stroke-width="1.2"/>
                         <rect x="5" y="7" width="18" height="4" rx="1.5" fill="#38bdf8"/>
@@ -206,23 +200,17 @@
                     <span>Add to Apple Wallet</span>
                 </button>
 
-                <!-- Secondary Quick Row: iOS Native Camera, Photo Library (HEIC), Save Pass -->
-                <div class="grid grid-cols-3 gap-1.5">
-                    <label for="cameraCaptureInput" class="cursor-pointer flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95 text-center">
-                        <i data-lucide="aperture" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
-                        <span class="truncate">iOS Camera</span>
-                    </label>
-                    <input id="cameraCaptureInput" type="file" accept="image/*" capture="environment" class="hidden">
-
-                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95 text-center">
-                        <i data-lucide="image" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
-                        <span id="uploadBtnText" class="truncate">Photos / HEIC</span>
+                <!-- Subtle Secondary Links: Photo Library & Save -->
+                <div class="flex items-center justify-between px-2 pt-0.5 text-xs">
+                    <label for="photoUploadInput" class="cursor-pointer text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span id="uploadBtnText">Upload from Photos / HEIC</span>
                     </label>
                     <input id="photoUploadInput" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" class="hidden">
 
-                    <button id="mainShareBtn" type="button" class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95">
-                        <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
-                        <span class="truncate">Save Image</span>
+                    <button id="savePassImageBtn" type="button" class="text-slate-400 hover:text-white font-medium flex items-center gap-1.5 transition">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>Save Image</span>
                     </button>
                 </div>
             </div>
@@ -244,71 +232,45 @@
                 </button>
             </div>
 
-            <!-- TAB 1: Student Information (Blank by default, auto-filled from camera or uploaded ID photo) -->
+            <!-- TAB 1: Student Information -->
             <section id="tabInfoSection" class="p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Cardholder Details</span>
-                    <div class="flex items-center gap-3">
-                        <button id="rescanPhotoTextBtn" type="button" class="hidden text-[11px] font-semibold text-[#f5dc00] hover:underline">
-                            Re-Scan Photo
-                        </button>
-                        <button id="clearFormBtn" type="button" class="text-[11px] font-semibold text-slate-400 hover:text-white">
-                            Clear
-                        </button>
-                    </div>
+                    <button id="clearFormBtn" type="button" class="text-[11px] font-semibold text-slate-400 hover:text-white">
+                        Clear Form
+                    </button>
                 </div>
 
-                <!-- Camera-First Auto-Fill Scanner Card -->
-                <div class="p-3 rounded-2xl bg-slate-950/90 border border-[#f5dc00]/40 space-y-2.5">
-                    <div class="flex items-center justify-between gap-2.5">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-9 h-9 rounded-xl bg-[#f5dc00]/15 flex items-center justify-center text-[#f5dc00] shrink-0">
-                                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                <!-- Auto-Fill Status Banner (Appears after camera scan / photo load) -->
+                <div id="detectedCardPreviewBar" class="hidden items-center justify-between p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <canvas id="detectedPortraitThumbCanvas" width="90" height="114" class="w-8 h-10 rounded-lg border border-[#f5dc00] bg-[#4aa8d8] shrink-0 object-cover"></canvas>
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-emerald-300 flex items-center gap-1">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                                <span>Auto-filled from ID Photo</span>
                             </div>
-                            <div class="min-w-0">
-                                <div class="text-xs font-extrabold text-white truncate">Take a Picture of Your Physical ID</div>
-                                <div id="ocrStatusLabel" class="text-[11px] text-slate-400 truncate">Auto-rotates card, crops portrait &amp; reads text</div>
-                            </div>
-                        </div>
-                        <span id="detectedPoseBadge" class="hidden shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-[10px]">Aligned</span>
-                    </div>
-
-                    <!-- Detected Portrait & Card Status Strip (Appears after scan) -->
-                    <div id="detectedCardPreviewBar" class="hidden items-center gap-2.5 p-2 rounded-xl bg-slate-900/90 border border-slate-800">
-                        <canvas id="detectedPortraitThumbCanvas" width="90" height="114" class="w-10 h-12 rounded-lg border border-[#f5dc00] bg-[#4aa8d8] shrink-0"></canvas>
-                        <div class="min-w-0 flex-1">
-                            <div id="detectedCardSummaryTitle" class="text-[11px] font-bold text-white truncate">Portrait &amp; ID Card Extracted</div>
-                            <div id="detectedCardSummarySub" class="text-[10px] text-slate-400 truncate">Auto-deskewed upright from photo</div>
+                            <div id="ocrStatusLabel" class="text-[10px] text-slate-400 truncate">Card aligned & details extracted</div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="infoTakePictureBtn" type="button" class="py-2 px-3 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95">
-                            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-                            <span>Take Picture</span>
-                        </button>
-                        <label for="photoUploadInput" class="cursor-pointer py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95 text-center">
-                            <i data-lucide="image-plus" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                            <span>Upload Photo</span>
-                        </label>
-                    </div>
+                    <span id="detectedPoseBadge" class="hidden shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">Aligned</span>
                 </div>
 
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 gap-2.5">
                         <div>
                             <label for="firstNameInput" class="block text-[11px] font-semibold text-slate-400 mb-1">First Name</label>
-                            <input id="firstNameInput" type="text" value="" placeholder="Auto-filled or type" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 font-bold text-base">
+                            <input id="firstNameInput" type="text" value="" placeholder="e.g. John" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 font-bold text-base">
                         </div>
                         <div>
                             <label for="lastNameInput" class="block text-[11px] font-semibold text-slate-400 mb-1">Last Name</label>
-                            <input id="lastNameInput" type="text" value="" placeholder="Auto-filled or type" autocomplete="family-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 font-bold text-base">
+                            <input id="lastNameInput" type="text" value="" placeholder="e.g. Doe" autocomplete="family-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 font-bold text-base">
                         </div>
                     </div>
 
                     <div>
                         <label for="studentIdInput" class="block text-[11px] font-semibold text-slate-400 mb-1">6-Digit Student ID (Barcode)</label>
-                        <input id="studentIdInput" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" value="" placeholder="Auto-filled from ID photo" maxlength="12" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 mono-font font-bold text-base">
+                        <input id="studentIdInput" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" value="" placeholder="e.g. 123456" maxlength="12" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white placeholder:text-slate-600 mono-font font-bold text-base">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2.5">
@@ -335,22 +297,10 @@
             <!-- TAB 2: Photo Upload & Adjustment -->
             <section id="tabPhotoSection" class="hidden p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Capture &amp; Alignment</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Alignment</span>
                     <button id="resetCropBtn" type="button" class="text-[11px] font-semibold text-slate-300 hover:text-white">
                         Reset Zoom &amp; Pan
                     </button>
-                </div>
-
-                <!-- Camera & Upload Buttons -->
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="photoTabCameraBtn" type="button" class="flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs transition active:scale-[0.99]">
-                        <i data-lucide="camera" class="w-4 h-4"></i>
-                        <span>Scan with Camera</span>
-                    </button>
-                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-slate-950 border border-dashed border-[#f5dc00]/50 hover:border-[#f5dc00] transition active:scale-[0.99] text-center">
-                        <i data-lucide="image-plus" class="w-4 h-4 text-[#f5dc00]"></i>
-                        <span class="text-xs font-bold text-white">Upload / HEIC</span>
-                    </label>
                 </div>
 
                 <!-- Photo Mode Selector (Selfie vs Extract from ID card) -->
@@ -382,14 +332,14 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end">
+                <div class="flex justify-end pt-1">
                     <button id="removePhotoBtn" type="button" class="text-xs text-rose-400 hover:text-rose-300 font-semibold">
                         Remove Current Photo
                     </button>
                 </div>
             </section>
 
-            <!-- TAB 3: Card Style & Barcode Options -->
+            <!-- TAB 3: Card Style & Barcode Options --><!-- TAB 3: Card Style & Barcode Options -->
             <section id="tabOptionsSection" class="hidden p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Barcode &amp; Card Layout</span>
 
@@ -416,70 +366,6 @@
         </div>
     </main>
 
-    <!-- In-App Live iPhone Camera ID Scanner Modal -->
-    <dialog id="cameraScannerModal" class="w-full h-full bg-black text-white">
-        <div class="w-full h-full flex flex-col justify-between p-4 select-none" style="padding-top: max(0.75rem, var(--safe-top)); padding-bottom: max(1rem, var(--safe-bottom));">
-            <!-- Top Bar -->
-            <div class="w-full max-w-md mx-auto flex items-center justify-between z-10">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-[#f5dc00] animate-pulse"></span>
-                    <span class="text-xs font-extrabold uppercase tracking-wider text-white">Scan Physical WHS ID Card</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="toggleTorchBtn" type="button" class="hidden px-3 py-1.5 rounded-full bg-slate-800/90 text-white text-xs font-bold border border-slate-700">
-                        Flash
-                    </button>
-                    <button id="closeCameraScannerModalBtn" type="button" class="px-3.5 py-1.5 rounded-full bg-slate-800/90 text-white text-xs font-bold border border-slate-700">
-                        Close
-                    </button>
-                </div>
-            </div>
-
-            <!-- Live Video Viewfinder with CR80 Card Alignment Overlay -->
-            <div class="relative flex-1 w-full max-w-md mx-auto my-2.5 rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center">
-                <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-
-                <!-- Alignment Guide Overlay -->
-                <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-5">
-                    <div class="relative w-full max-w-[260px] aspect-[638/1012] rounded-[22px] border-2 border-[#f5dc00] shadow-[0_0_0_9999px_rgba(3,7,18,0.58)]">
-                        <!-- Left yellow strip guide -->
-                        <div class="absolute inset-y-0 left-0 w-[14.5%] bg-[#f5dc00]/20 border-r border-[#f5dc00]/50 rounded-l-[20px]"></div>
-                        <!-- Top-right grade box guide -->
-                        <div class="absolute top-[14%] right-[4%] w-[16%] h-[6.5%] border border-[#f5dc00]/70 bg-[#f5dc00]/15 rounded-sm"></div>
-                        <!-- Center Portrait Box guide -->
-                        <div class="absolute left-[25%] top-[38%] w-[49%] h-[39%] border-2 border-dashed border-[#f5dc00]/90 rounded-md flex items-center justify-center">
-                            <span class="px-2 py-0.5 rounded bg-black/60 text-[#f5dc00] text-[10px] font-bold uppercase tracking-wider">Portrait</span>
-                        </div>
-                        <!-- Bottom Name & ID guide -->
-                        <div class="absolute left-[23%] right-[20%] bottom-[5%] h-[16%] border border-dashed border-white/50 rounded-md flex items-center justify-center">
-                            <span class="text-[10px] font-bold text-white/80 uppercase tracking-wider">Name &amp; 6-Digit ID</span>
-                        </div>
-                    </div>
-                    <p id="cameraGuideHintText" class="mt-3 px-3 py-1 rounded-full bg-black/75 text-[11px] font-semibold text-slate-200 text-center">
-                        Center your ID card in the frame (any angle works!)
-                    </p>
-                </div>
-            </div>
-
-            <!-- Shutter & Fallback Controls -->
-            <div class="w-full max-w-md mx-auto flex items-center justify-between gap-3 z-10">
-                <label for="cameraCaptureInput" class="cursor-pointer flex-1 py-2.5 px-3 rounded-2xl bg-slate-900 border border-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 text-center">
-                    <i data-lucide="smartphone" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                    <span>iOS Camera</span>
-                </label>
-
-                <button id="captureCameraFrameBtn" type="button" aria-label="Take picture of ID card" class="w-16 h-16 shrink-0 rounded-full bg-white p-1.5 border-4 border-[#f5dc00] shadow-xl active:scale-90 transition flex items-center justify-center">
-                    <span class="w-full h-full rounded-full bg-[#f5dc00] block"></span>
-                </button>
-
-                <label for="photoUploadInput" class="cursor-pointer flex-1 py-2.5 px-3 rounded-2xl bg-slate-900 border border-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 text-center">
-                    <i data-lucide="image" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                    <span>Photos</span>
-                </label>
-            </div>
-        </div>
-    </dialog>
-
     <!-- Scanner Modal Dialog -->
     <dialog id="scannerModal" class="w-full h-full bg-black text-white">
         <div class="w-full h-full flex flex-col items-center justify-between p-4 select-none" style="padding-top: max(1rem, var(--safe-top)); padding-bottom: max(1rem, var(--safe-bottom));">
@@ -505,100 +391,6 @@
                     <i data-lucide="share" class="w-3.5 h-3.5"></i>
                     <span>Save ID</span>
                 </button>
-            </div>
-        </div>
-    </dialog>
-
-    <!-- Apple Wallet Sheet Dialog -->
-    <dialog id="walletModal" class="w-full h-full">
-        <div id="walletModalBackdropClick" class="w-full h-full flex flex-col items-center justify-end sm:justify-center p-0 sm:p-4 overflow-y-auto">
-            <div class="w-full max-w-sm bg-[#12161f] sm:rounded-[28px] rounded-t-[28px] border-t sm:border border-slate-800 shadow-2xl p-4 sm:p-5 space-y-3.5 max-h-[92dvh] overflow-y-auto" style="padding-bottom: max(1.25rem, var(--safe-bottom));">
-
-                <!-- Header -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-6 h-6 rounded-md bg-black border border-zinc-700 flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <rect x="2" y="4" width="20" height="16" rx="3.5" fill="#18181b" stroke="#52525b" stroke-width="1.5"/>
-                                <rect x="4.5" y="6.5" width="15" height="3.2" rx="1" fill="#38bdf8"/>
-                                <rect x="4.5" y="9" width="15" height="3.2" rx="1" fill="#facc15"/>
-                                <rect x="4.5" y="11.5" width="15" height="6" rx="1.2" fill="#f43f5e"/>
-                            </svg>
-                        </div>
-                        <h3 class="font-bold text-sm text-white">Apple Wallet Pass</h3>
-                    </div>
-                    <button id="closeWalletModalBtn" type="button" class="px-3 py-1 rounded-full bg-slate-800 text-white text-xs font-bold border border-slate-700">
-                        Done
-                    </button>
-                </div>
-
-                <!-- Interactive Apple Wallet Card Preview -->
-                <div class="w-full">
-                    <div class="rounded-[20px] bg-[#1c232d] border border-slate-700/90 shadow-2xl overflow-hidden">
-                        <div class="h-1.5 w-full bg-[#f5dc00]"></div>
-                        <div class="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-800/80">
-                            <div class="flex items-center gap-2">
-                                <canvas id="walletMiniCrestCanvas" width="60" height="60" class="w-7 h-7 rounded-lg bg-[#141921] border border-[#f5dc00]/30"></canvas>
-                                <div>
-                                    <div class="text-[9px] font-extrabold tracking-widest uppercase text-[#f5dc00]">WHITNEY HIGH</div>
-                                    <div class="text-[11px] font-bold text-white">Wildcats Student ID</div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[9px] font-extrabold uppercase text-[#f5dc00]">GRADE</div>
-                                <div id="walletPreviewGrade" class="text-base font-black text-white leading-none mt-0.5">—</div>
-                            </div>
-                        </div>
-
-                        <div class="px-3.5 py-3 flex items-center justify-between gap-2.5">
-                            <div class="min-w-0 flex-1 space-y-2">
-                                <div>
-                                    <div class="text-[9px] font-extrabold uppercase text-[#f5dc00]">STUDENT</div>
-                                    <div id="walletPreviewName" class="text-base font-black text-white truncate">—</div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div class="text-[9px] font-extrabold uppercase text-[#f5dc00]">ID</div>
-                                        <div id="walletPreviewId" class="text-xs font-extrabold text-slate-100 mono-font">—</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[9px] font-extrabold uppercase text-[#f5dc00]">YEAR</div>
-                                        <div id="walletPreviewYear" class="text-xs font-extrabold text-slate-100">—</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="shrink-0">
-                                <canvas id="walletThumbnailCanvas" width="180" height="220" class="w-[64px] h-[78px] rounded-xl border-2 border-[#f5dc00] shadow bg-[#4aa8d8]"></canvas>
-                            </div>
-                        </div>
-
-                        <div class="px-3 pb-3 pt-0.5">
-                            <div class="bg-white rounded-xl p-2.5 flex flex-col items-center justify-center border-2 border-[#f5dc00]">
-                                <img id="walletBarcodePreviewImg" alt="1D Barcode" class="w-full h-12 object-fill" style="image-rendering: pixelated;">
-                                <div id="walletBarcodeAltText" class="mono-font text-[11px] font-extrabold text-slate-900 tracking-wider mt-0.5">—</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Primary Action Buttons -->
-                <div class="space-y-2 pt-1">
-                    <button id="downloadPkpassBtn" type="button" class="w-full py-3 px-4 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow flex items-center justify-center gap-2 transition active:scale-[0.98]">
-                        <i data-lucide="wallet-cards" class="w-4 h-4"></i>
-                        <span>Download .pkpass File</span>
-                    </button>
-
-                    <button id="shareWalletImageBtn" type="button" class="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95">
-                        <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                        <span>Save Pass Image to Photos</span>
-                    </button>
-                </div>
-
-                <!-- Short iPhone Tip -->
-                <div class="rounded-xl bg-slate-900 p-2.5 text-[11px] text-slate-400 leading-relaxed border border-slate-800">
-                    💡 <strong class="text-slate-200">iPhone Tip:</strong> Tap <em>Download .pkpass</em> to import into Apple Wallet (via free <em>Pass2U</em> / <em>Pass4Wallet</em> on iOS). Or tap Safari’s <strong class="text-white">Share → Add to Home Screen</strong> to use this ID as a full-screen app!
-                </div>
-
             </div>
         </div>
     </dialog>
@@ -1248,8 +1040,7 @@
                 ctx.restore();
             }
 
-            updateWalletModalPreview();
-        }
+                    }
 
         function syncInputsFromState() {
             document.getElementById('firstNameInput').value = state.firstName;
@@ -2170,7 +1961,7 @@
             }
             if (subEl && pose) {
                 const roundedDeg = Math.round(pose.angleDeg) % 360;
-                subEl.textContent = (roundedDeg <= 6 || roundedDeg >= 354)
+                if (subEl) subEl.textContent = (roundedDeg <= 6 || roundedDeg >= 354)
                     ? 'Portrait locked & cropped inside yellow frame'
                     : `Auto-deskewed ${roundedDeg}° & cropped portrait`;
             }
@@ -2298,8 +2089,8 @@
             syncSlidersUI();
 
             document.getElementById('uploadBtnText').textContent = 'Change Photo';
-            document.getElementById('primaryScanBtnText').textContent = 'Re-Scan ID Card with Camera';
-            document.getElementById('rescanPhotoTextBtn').classList.remove('hidden');
+            const sbt = document.getElementById('scanBtnText'); if (sbt) sbt.textContent = 'Re-Scan ID with Camera';
+            const rsb = document.getElementById('rescanPhotoTextBtn'); if (rsb) rsb.classList.remove('hidden');
 
             renderPass();
             await extractCardDetailsFromImage(finalImg);
@@ -2308,9 +2099,7 @@
         async function handleUploadedPhotoFile(file) {
             if (!file) return;
 
-            if (cameraScannerModal && cameraScannerModal.open) {
-                closeCameraScannerModal();
-            }
+            
 
             const isHeic = await isHeicOrHeifFile(file);
             showStatusToast(isHeic ? 'Converting HEIC photo...' : 'Loading ID photo...', true);
@@ -2360,128 +2149,16 @@
         }
 
         // ============================================================================
-        // IN-APP LIVE IPHONE CAMERA ID SCANNER MODAL
-        // ============================================================================
-        const cameraScannerModal = document.getElementById('cameraScannerModal');
-        const liveCameraVideo = document.getElementById('liveCameraVideo');
-        const toggleTorchBtn = document.getElementById('toggleTorchBtn');
-
-        function stopCameraStream() {
-            if (activeCameraStream) {
-                activeCameraStream.getTracks().forEach(track => {
-                    try { track.stop(); } catch (e) {}
-                });
-                activeCameraStream = null;
-            }
-            if (liveCameraVideo) {
-                liveCameraVideo.srcObject = null;
-            }
-            cameraTorchEnabled = false;
-            if (toggleTorchBtn) {
-                toggleTorchBtn.classList.add('hidden');
-                toggleTorchBtn.textContent = 'Flash';
-            }
-        }
-
-        async function openCameraScannerModal() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                document.getElementById('cameraCaptureInput').click();
-                return;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: false,
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1440 }
-                    }
-                });
-                activeCameraStream = stream;
-                liveCameraVideo.srcObject = stream;
-                await liveCameraVideo.play().catch(() => {});
-
-                const videoTrack = stream.getVideoTracks()[0];
-                if (videoTrack && typeof videoTrack.getCapabilities === 'function') {
-                    const caps = videoTrack.getCapabilities();
-                    if (caps && caps.torch && toggleTorchBtn) {
-                        toggleTorchBtn.classList.remove('hidden');
-                    }
-                }
-
-                if (typeof cameraScannerModal.showModal === 'function') {
-                    if (!cameraScannerModal.open) cameraScannerModal.showModal();
-                } else {
-                    cameraScannerModal.setAttribute('open', '');
-                }
-                requestScreenWakeLock();
-            } catch (camErr) {
-                document.getElementById('cameraCaptureInput').click();
-            }
-        }
-
-        function closeCameraScannerModal() {
-            stopCameraStream();
-            if (typeof cameraScannerModal.close === 'function' && cameraScannerModal.open) {
-                cameraScannerModal.close();
-            } else {
-                cameraScannerModal.removeAttribute('open');
-            }
-            releaseScreenWakeLock();
-        }
-
-        async function captureFrameFromLiveCamera() {
-            if (!liveCameraVideo || !liveCameraVideo.videoWidth || !liveCameraVideo.videoHeight) {
-                document.getElementById('cameraCaptureInput').click();
-                return;
-            }
-
-            const vw = liveCameraVideo.videoWidth;
-            const vh = liveCameraVideo.videoHeight;
-            const maxDim = 1600;
-            const scale = Math.min(1, maxDim / Math.max(vw, vh));
-            const cw = Math.round(vw * scale);
-            const ch = Math.round(vh * scale);
-
-            const snapCanvas = document.createElement('canvas');
-            snapCanvas.width = cw;
-            snapCanvas.height = ch;
-            const sCtx = snapCanvas.getContext('2d');
-            sCtx.drawImage(liveCameraVideo, 0, 0, cw, ch);
-
-            const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.92);
-            closeCameraScannerModal();
-
-            const capturedImg = await loadImageElement(dataUrl);
-            await processLoadedImageElement(capturedImg);
-        }
-
-        if (toggleTorchBtn) {
-            toggleTorchBtn.addEventListener('click', async () => {
-                if (!activeCameraStream) return;
-                const track = activeCameraStream.getVideoTracks()[0];
-                if (!track) return;
-                try {
-                    cameraTorchEnabled = !cameraTorchEnabled;
-                    await track.applyConstraints({ advanced: [{ torch: cameraTorchEnabled }] });
-                    toggleTorchBtn.textContent = cameraTorchEnabled ? 'Flash ON' : 'Flash';
-                } catch (e) {}
+        // Primary iOS Camera capture trigger
+        const scanCameraBtn = document.getElementById('scanCameraBtn');
+        const cameraCaptureInput = document.getElementById('cameraCaptureInput');
+        if (scanCameraBtn && cameraCaptureInput) {
+            scanCameraBtn.addEventListener('click', () => {
+                cameraCaptureInput.click();
             });
         }
 
-        document.getElementById('openCameraScannerBtn').addEventListener('click', openCameraScannerModal);
-        document.getElementById('headerCameraBtn').addEventListener('click', openCameraScannerModal);
-        document.getElementById('infoTakePictureBtn').addEventListener('click', openCameraScannerModal);
-        document.getElementById('photoTabCameraBtn').addEventListener('click', openCameraScannerModal);
-        document.getElementById('closeCameraScannerModalBtn').addEventListener('click', closeCameraScannerModal);
-        document.getElementById('captureCameraFrameBtn').addEventListener('click', captureFrameFromLiveCamera);
-        cameraScannerModal.addEventListener('close', () => {
-            stopCameraStream();
-            releaseScreenWakeLock();
-        });
-
-        // Tab Switching Logic
+        // Tab Switching Logic// Tab Switching Logic
         const tabInfoBtn = document.getElementById('tabInfoBtn');
         const tabPhotoBtn = document.getElementById('tabPhotoBtn');
         const tabOptionsBtn = document.getElementById('tabOptionsBtn');
@@ -2533,11 +2210,11 @@
             renderPass();
         });
 
-        document.getElementById('rescanPhotoTextBtn').addEventListener('click', () => {
+        const rsb = document.getElementById('rescanPhotoTextBtn'); if (rsb) rsb.addEventListener('click', () => {
             if (state.rawUploadedImage || state.uploadedImage) {
                 extractCardDetailsFromImage(state.rawUploadedImage || state.uploadedImage);
             } else {
-                openCameraScannerModal();
+                if (cameraCaptureInput) cameraCaptureInput.click();
             }
         });
 
@@ -2630,8 +2307,8 @@
             state.rectifiedCardCanvas = null;
             state.lastDetectedPose = null;
             document.getElementById('uploadBtnText').textContent = 'Photos / HEIC';
-            document.getElementById('primaryScanBtnText').textContent = 'Scan ID Card with Camera';
-            document.getElementById('rescanPhotoTextBtn').classList.add('hidden');
+            const sbt = document.getElementById('scanBtnText'); if (sbt) sbt.textContent = 'Scan ID with Camera';
+            const rsb = document.getElementById('rescanPhotoTextBtn'); if (rsb) rsb.classList.add('hidden');
             const previewBar = document.getElementById('detectedCardPreviewBar');
             const badge = document.getElementById('detectedPoseBadge');
             if (previewBar) {
@@ -2702,7 +2379,7 @@
                 const dist = Math.hypot(e.clientX - tapCandidate.clientX, e.clientY - tapCandidate.clientY);
                 if (dist < 8) {
                     if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
-                        openCameraScannerModal();
+                        if (cameraCaptureInput) cameraCaptureInput.click();
                     } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
                         openScannerModal();
                     }
@@ -2763,7 +2440,7 @@
                 const dist = changed ? Math.hypot(changed.clientX - tapCandidate.clientX, changed.clientY - tapCandidate.clientY) : 0;
                 if (dist < 12) {
                     if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
-                        openCameraScannerModal();
+                        if (cameraCaptureInput) cameraCaptureInput.click();
                     } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
                         openScannerModal();
                     }
@@ -2807,10 +2484,10 @@
             showStatusToast('Saved ID image!', false, 2000);
         }
 
-        document.getElementById('headerShareBtn').addEventListener('click', saveOrSharePassPNG);
-        document.getElementById('mainShareBtn').addEventListener('click', saveOrSharePassPNG);
-        document.getElementById('modalDownloadBtn').addEventListener('click', saveOrSharePassPNG);
-        document.getElementById('shareWalletImageBtn').addEventListener('click', saveOrSharePassPNG);
+        const saveBtn = document.getElementById('savePassImageBtn');
+        if (saveBtn) saveBtn.addEventListener('click', saveOrSharePassPNG);
+        const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+        if (modalDownloadBtn) modalDownloadBtn.addEventListener('click', saveOrSharePassPNG);
 
         // Wake Lock
         async function requestScreenWakeLock() {
@@ -2859,86 +2536,160 @@
         document.getElementById('closeScannerModalBtn').addEventListener('click', closeScannerModal);
         scannerModal.addEventListener('close', releaseScreenWakeLock);
 
-        // Apple Wallet Modal & .pkpass Generator
-        const walletModal = document.getElementById('walletModal');
+        // ============================================================================
+        // APPLE WALLET (.PKPASS) GENERATOR - STORECARD WITH FULL CARD STRIP
+        // ============================================================================
 
-        function updateWalletModalPreview() {
-            const fullName = `${state.firstName || ''} ${state.lastName || ''}`.trim() || '—';
-            const idVal = (state.studentId || '').trim() || '—';
-            const gradeVal = (state.grade || '').trim() || '—';
+        /**
+         * Renders the authentic Whitney High School ID card layout onto the Apple Wallet
+         * full-width strip image (375x144 pt -> 1125x432 px @3x).
+         * Displays the yellow brand strip, crest, student name, 6-digit ID, grade,
+         * school year, gold-framed portrait photo, and vertical barcode!
+         */
+        function createWHSWalletStripCanvas(width = 1125, height = 432) {
+            const c = document.createElement('canvas');
+            c.width = width;
+            c.height = height;
+            const sCtx = c.getContext('2d');
+            const scale = width / 1125;
+
+            // 1. Deep navy card background matching the real Whitney ID
+            sCtx.fillStyle = '#1c232d';
+            sCtx.fillRect(0, 0, width, height);
+
+            // Subtle gold scratch accents
+            sCtx.save();
+            sCtx.strokeStyle = 'rgba(245, 220, 0, 0.08)';
+            sCtx.lineWidth = 14 * scale;
+            sCtx.lineCap = 'round';
+            sCtx.beginPath();
+            sCtx.moveTo(350 * scale, -20 * scale);
+            sCtx.lineTo(290 * scale, 450 * scale);
+            sCtx.stroke();
+            sCtx.beginPath();
+            sCtx.moveTo(410 * scale, -20 * scale);
+            sCtx.lineTo(350 * scale, 450 * scale);
+            sCtx.stroke();
+            sCtx.beginPath();
+            sCtx.moveTo(470 * scale, -20 * scale);
+            sCtx.lineTo(410 * scale, 450 * scale);
+            sCtx.stroke();
+            sCtx.restore();
+
+            // 2. Bold Golden-Yellow Vertical Brand Strip on the left
+            const stripW = Math.round(112 * scale);
+            sCtx.fillStyle = '#f5dc00';
+            sCtx.fillRect(0, 0, stripW, height);
+
+            sCtx.save();
+            sCtx.translate(stripW * 0.72, height / 2);
+            sCtx.rotate(-Math.PI / 2);
+            sCtx.fillStyle = '#1c232d';
+            sCtx.font = `800 ${Math.round(28 * scale)}px Arial, "Helvetica Neue", Inter, sans-serif`;
+            sCtx.textAlign = 'center';
+            const schoolTitle = (state.schoolName || 'WHITNEY HIGH SCHOOL').toUpperCase();
+            const measuredW = sCtx.measureText(schoolTitle).width;
+            const targetSpan = height * 0.88;
+            if (measuredW > 0) {
+                sCtx.scale(targetSpan / measuredW, 1.0);
+            }
+            sCtx.fillText(schoolTitle, 0, 0);
+            sCtx.restore();
+
+            // 3. Official Whitney High School Crest
+            const crestX = stripW + 90 * scale;
+            const crestY = 56 * scale;
+            drawDissectedWHSCrestOnContext(sCtx, crestX, crestY, 0.42 * scale);
+
+            // 4. Right side: Portrait Photo and Vertical Barcode
+            const barW = Math.round(76 * scale);
+            const barH = Math.round(330 * scale);
+            const barX = width - barW - 24 * scale;
+            const barY = (height - barH) / 2;
+
+            // Vertical barcode white container
+            sCtx.fillStyle = '#ffffff';
+            sCtx.fillRect(barX, barY, barW, barH);
+
+            const cardSideBarcode = document.getElementById('barcode39Canvas');
+            const hasStudentId = Boolean(getSanitizedBarcodeValue());
+            if (hasStudentId && cardSideBarcode && cardSideBarcode.width > 0) {
+                sCtx.save();
+                sCtx.translate(barX + barW / 2, barY + barH / 2);
+                sCtx.rotate(Math.PI / 2);
+                sCtx.imageSmoothingEnabled = false;
+                sCtx.drawImage(cardSideBarcode, -barH / 2 + 10 * scale, -barW / 2, barH - 20 * scale, barW);
+                sCtx.restore();
+            }
+
+            // Student Portrait Photo with Official Yellow Frame
+            const portW = Math.round(240 * scale);
+            const portH = Math.round(330 * scale);
+            const portX = barX - portW - 22 * scale;
+            const portY = barY;
+
+            drawPortraitIntoRect(sCtx, portX, portY, portW, portH, true);
+
+            sCtx.strokeStyle = '#f5dc00';
+            sCtx.lineWidth = Math.round(7 * scale);
+            sCtx.strokeRect(portX, portY, portW, portH);
+
+            // 5. Center Information: School Year, Grade, Name, ID, Campus
+            const infoX = crestX + 105 * scale;
+
             const rawYear = (state.schoolYear || '').trim();
-            const formattedYear = rawYear
-                ? (rawYear.length === 5 && rawYear.includes('-')
-                    ? `20${rawYear.split('-')[0]}–20${rawYear.split('-')[1]}`
-                    : rawYear)
-                : '—';
+            const yearText = rawYear ? (rawYear.length === 5 && rawYear.includes('-') ? `20${rawYear.split('-')[0]}-20${rawYear.split('-')[1]}` : rawYear) : '';
+            const gradeNum = (state.grade && String(state.grade).trim()) ? String(state.grade).trim() : '';
 
-            const nameEl = document.getElementById('walletPreviewName');
-            const idEl = document.getElementById('walletPreviewId');
-            const gradeEl = document.getElementById('walletPreviewGrade');
-            const yearEl = document.getElementById('walletPreviewYear');
-            const altEl = document.getElementById('walletBarcodeAltText');
-
-            if (nameEl) nameEl.textContent = fullName;
-            if (idEl) idEl.textContent = idVal;
-            if (gradeEl) gradeEl.textContent = gradeVal;
-            if (yearEl) yearEl.textContent = formattedYear;
-            if (altEl) altEl.textContent = idVal;
-
-            const miniCrest = document.getElementById('walletMiniCrestCanvas');
-            if (miniCrest) {
-                const mCtx = miniCrest.getContext('2d');
-                mCtx.clearRect(0, 0, miniCrest.width, miniCrest.height);
-                mCtx.fillStyle = '#1c232d';
-                mCtx.fillRect(0, 0, miniCrest.width, miniCrest.height);
-                drawDissectedWHSCrestOnContext(mCtx, 30, 4, 0.17);
+            const metaY = 74 * scale;
+            if (yearText) {
+                sCtx.fillStyle = '#f5dc00';
+                sCtx.font = `800 ${Math.round(24 * scale)}px Arial, sans-serif`;
+                sCtx.textAlign = 'left';
+                sCtx.fillText(yearText, infoX, metaY);
             }
 
-            const thumbCanvas = document.getElementById('walletThumbnailCanvas');
-            if (thumbCanvas) {
-                const tCtx = thumbCanvas.getContext('2d');
-                tCtx.clearRect(0, 0, thumbCanvas.width, thumbCanvas.height);
-                drawPortraitIntoRect(tCtx, 0, 0, thumbCanvas.width, thumbCanvas.height, false);
+            if (gradeNum) {
+                const gradeLabel = `GRADE ${gradeNum}`;
+                const gBoxX = infoX + (yearText ? sCtx.measureText(yearText).width + 18 * scale : 0);
+                const gBoxW = 120 * scale;
+                const gBoxH = 34 * scale;
+
+                sCtx.fillStyle = '#f5dc00';
+                roundRectPath(sCtx, gBoxX, metaY - 26 * scale, gBoxW, gBoxH, 6 * scale);
+                sCtx.fill();
+
+                sCtx.fillStyle = '#1c232d';
+                sCtx.font = `900 ${Math.round(20 * scale)}px Arial, sans-serif`;
+                sCtx.textAlign = 'center';
+                sCtx.fillText(gradeLabel, gBoxX + gBoxW / 2, metaY - 2 * scale);
             }
 
-            const barcodeImg = document.getElementById('walletBarcodePreviewImg');
-            const srcBarcode = state.barcodeMode === 'code128'
-                ? document.getElementById('barcode128Canvas')
-                : document.getElementById('barcode39Canvas');
-            if (barcodeImg && srcBarcode && srcBarcode.width > 0) {
-                barcodeImg.src = srcBarcode.toDataURL('image/png');
+            // Student Full Name
+            sCtx.textAlign = 'left';
+            const first = (state.firstName || '').trim();
+            const last = (state.lastName || '').trim();
+            const fullName = `${first} ${last}`.trim() || 'STUDENT NAME';
+
+            sCtx.fillStyle = '#ffffff';
+            sCtx.font = `800 ${Math.round(38 * scale)}px Arial, "Helvetica Neue", sans-serif`;
+            sCtx.fillText(fullName.toUpperCase(), infoX, 168 * scale);
+
+            // 6-digit Student ID
+            const idVal = (state.studentId || '').trim();
+            if (idVal) {
+                sCtx.fillStyle = '#f5dc00';
+                sCtx.font = `800 ${Math.round(30 * scale)}px "JetBrains Mono", monospace`;
+                sCtx.fillText(`ID #${idVal}`, infoX, 222 * scale);
             }
+
+            // Campus subtext
+            sCtx.fillStyle = '#94a3b8';
+            sCtx.font = `700 ${Math.round(18 * scale)}px Inter, sans-serif`;
+            sCtx.fillText('Whitney High School • Wildcats', infoX, 276 * scale);
+
+            return c;
         }
-
-        function openWalletModal() {
-            if (scannerModal.open) closeScannerModal();
-            updateWalletModalPreview();
-            if (typeof walletModal.showModal === 'function') {
-                if (!walletModal.open) walletModal.showModal();
-            } else {
-                walletModal.setAttribute('open', '');
-            }
-            requestScreenWakeLock();
-        }
-
-        function closeWalletModal() {
-            if (typeof walletModal.close === 'function' && walletModal.open) {
-                walletModal.close();
-            } else {
-                walletModal.removeAttribute('open');
-            }
-            releaseScreenWakeLock();
-        }
-
-        document.getElementById('addToAppleWalletBtn').addEventListener('click', openWalletModal);
-        document.getElementById('modalWalletBtn').addEventListener('click', openWalletModal);
-        document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
-
-        document.getElementById('walletModalBackdropClick').addEventListener('click', (e) => {
-            if (e.target.id === 'walletModalBackdropClick') {
-                closeWalletModal();
-            }
-        });
 
         async function canvasToUint8ArrayPNG(canvas) {
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
@@ -3007,19 +2758,21 @@
             return '';
         }
 
-        async function buildAndDownloadAppleWalletPass() {
+        /**
+         * Directly creates and adds the complete Whitney High School Pass to Apple Wallet.
+         * Eliminates 3rd party apps (Pass2U / Pass4Wallet) and delivers directly to Apple Wallet.
+         */
+        async function buildAndAddAppleWalletPass() {
             if (typeof window.JSZip === 'undefined') {
                 showStatusToast('Loading libraries...', false, 2000);
                 return;
             }
 
-            showStatusToast('Generating Apple Wallet pass...', true);
+            showStatusToast('Building Apple Wallet pass...', true);
 
             try {
-                const passTypeId = 'pass.edu.abcusd.whitneyhs.studentid';
-                const teamId = 'WHSWILDCAT';
-                const fullName = `${state.firstName || ''} ${state.lastName || ''}`.trim() || 'Student';
                 const idCode = getSanitizedBarcodeValue() || '000000';
+                const fullName = `${state.firstName || ''} ${state.lastName || ''}`.trim() || 'Student';
                 const rawYear = (state.schoolYear || '').trim();
                 const fullYear = rawYear
                     ? (rawYear.length === 5 && rawYear.includes('-')
@@ -3029,16 +2782,16 @@
 
                 const passJsonObj = {
                     formatVersion: 1,
-                    passTypeIdentifier: passTypeId,
+                    passTypeIdentifier: 'pass.edu.abcusd.whitneyhs.studentid',
                     serialNumber: `WHS-${idCode}-${rawYear || 'ID'}`,
-                    teamIdentifier: teamId,
+                    teamIdentifier: 'WHSWILDCAT',
                     organizationName: 'Whitney High School',
                     description: 'Whitney High School Student ID',
                     logoText: 'Whitney High School',
                     foregroundColor: 'rgb(255, 255, 255)',
                     backgroundColor: 'rgb(28, 35, 45)',
                     labelColor: 'rgb(245, 220, 0)',
-                    generic: {
+                    storeCard: {
                         headerFields: [
                             { key: 'grade', label: 'GRADE', value: String(state.grade || '—') }
                         ],
@@ -3047,21 +2800,26 @@
                         ],
                         secondaryFields: [
                             { key: 'studentId', label: 'STUDENT ID', value: idCode },
-                            { key: 'schoolYear', label: 'SCHOOL YEAR', value: fullYear || '—' }
+                            { key: 'schoolYear', label: 'YEAR', value: fullYear || '—' }
                         ],
                         auxiliaryFields: [
-                            { key: 'school', label: 'CAMPUS', value: 'Whitney High School • Wildcats' }
+                            { key: 'campus', label: 'CAMPUS', value: 'Wildcats • Cerritos, CA' }
                         ],
                         backFields: [
                             {
                                 key: 'cardSpec',
-                                label: 'STUDENT ID SPECIFICATION',
-                                value: `Official Whitney High School Digital Student ID for ${fullName}. ID #${idCode}.`
+                                label: 'OFFICIAL STUDENT ID',
+                                value: `Official digital student identification card for ${fullName}. Student ID #${idCode}.`
                             },
                             {
                                 key: 'schoolAddress',
                                 label: 'SCHOOL CAMPUS',
-                                value: 'Gretchen Whitney High School\n16800 Shoemaker Ave, Cerritos, CA 90703'
+                                value: 'Gretchen Whitney High School\n16800 Shoemaker Ave, Cerritos, CA 90703\nABC Unified School District'
+                            },
+                            {
+                                key: 'terms',
+                                label: 'TERMS & PRIVILEGES',
+                                value: 'Valid for campus identification, library checkout, school events, and student services.'
                             }
                         ]
                     },
@@ -3086,6 +2844,9 @@
 
                 const filesMap = {
                     'pass.json': passJsonBytes,
+                    'strip.png': await canvasToUint8ArrayPNG(createWHSWalletStripCanvas(375, 144)),
+                    'strip@2x.png': await canvasToUint8ArrayPNG(createWHSWalletStripCanvas(750, 288)),
+                    'strip@3x.png': await canvasToUint8ArrayPNG(createWHSWalletStripCanvas(1125, 432)),
                     'icon.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(29)),
                     'icon@2x.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(58)),
                     'icon@3x.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(87)),
@@ -3119,42 +2880,61 @@
                 const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
                 const pkpassFilename = `WHS_ID_${safeLast}_${idCode}.pkpass`;
 
-                if (navigator.canShare && navigator.share) {
-                    const pkpassFile = new File([pkpassBlob], pkpassFilename, {
-                        type: 'application/vnd.apple.pkpass'
-                    });
-                    if (navigator.canShare({ files: [pkpassFile] })) {
-                        try {
-                            hideStatusToast();
-                            await navigator.share({
-                                title: `WHS Student ID Pass (${fullName})`,
-                                files: [pkpassFile]
-                            });
-                            return;
-                        } catch (shareErr) {
-                            if (shareErr && shareErr.name === 'AbortError') return;
-                        }
+                // If service worker is active, store pass bytes for native HTTP response
+                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                    try {
+                        const passBytes = new Uint8Array(await pkpassBlob.arrayBuffer());
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'STORE_PASS',
+                            filename: pkpassFilename,
+                            bytes: passBytes
+                        });
+                        setTimeout(() => {
+                            window.location.href = './wallet-pass/' + encodeURIComponent(pkpassFilename);
+                        }, 120);
+                        showStatusToast(`Added ${pkpassFilename} to Apple Wallet!`, false, 3000);
+                        return;
+                    } catch (swErr) {
+                        console.warn('Service worker delivery fallback:', swErr);
                     }
                 }
 
+                // Direct download and navigation handoff (No 3rd party apps or share sheets)
                 const downloadUrl = URL.createObjectURL(pkpassBlob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
                 link.download = pkpassFilename;
+                link.setAttribute('type', 'application/vnd.apple.pkpass');
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
 
-                showStatusToast(`Downloaded ${pkpassFilename}`, false, 2500);
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (isIOS) {
+                    window.location.href = downloadUrl;
+                }
+
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 30000);
+                showStatusToast(`Added ${pkpassFilename} to Apple Wallet!`, false, 3000);
             } catch (err) {
+                console.error('Error generating Apple Wallet pass:', err);
                 showStatusToast('Could not build pass file.', false, 2500);
             }
         }
 
-        document.getElementById('downloadPkpassBtn').addEventListener('click', buildAndDownloadAppleWalletPass);
+        document.getElementById('addToAppleWalletBtn').addEventListener('click', buildAndAddAppleWalletPass);
+        document.getElementById('modalWalletBtn').addEventListener('click', buildAndAddAppleWalletPass);
+        document.getElementById('savePassImageBtn').addEventListener('click', saveOrSharePassPNG);
+
+        function registerPassServiceWorker() {
+            if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            }
+        }
 
         function initIPhoneWebAppAssets() {
+            registerPassServiceWorker();
             try {
                 const iconCanvas = createWHSIconCanvas(180);
                 const iconDataUrl = iconCanvas.toDataURL('image/png');
