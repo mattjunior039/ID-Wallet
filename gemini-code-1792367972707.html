@@ -145,14 +145,18 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-                <button id="headerScanBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
-                    <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
-                    <span>Scan</span>
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button id="headerCameraBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 text-xs font-extrabold shadow transition active:scale-95">
+                    <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                    <span>Scan ID</span>
                 </button>
-                <button id="headerShareBtn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 text-xs font-extrabold shadow transition active:scale-95">
-                    <i data-lucide="share" class="w-3.5 h-3.5"></i>
-                    <span>Save</span>
+                <button id="headerScanBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
+                    <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                    <span>Pass</span>
+                </button>
+                <button id="headerShareBtn" type="button" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
+                    <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                    <span class="hidden sm:inline">Save</span>
                 </button>
             </div>
         </div>
@@ -178,11 +182,17 @@
             <!-- Helpful Drag / Scan Hint -->
             <div class="mt-2 flex items-center justify-between w-full px-1 text-[11px] text-slate-400">
                 <span class="flex items-center gap-1"><i data-lucide="move" class="w-3 h-3 text-[#f5dc00]"></i> Drag portrait to adjust</span>
-                <button id="tapScanHintBtn" type="button" class="text-[#f5dc00] hover:underline font-semibold">Tap for full scanner</button>
+                <button id="tapScanHintBtn" type="button" class="text-[#f5dc00] hover:underline font-semibold">Full-screen barcode</button>
             </div>
 
-            <!-- Primary Actions (Add to Wallet + Upload/Save) -->
+            <!-- Primary Actions (Camera-First Scan + Add to Apple Wallet + Quick Actions) -->
             <div class="w-full mt-3.5 space-y-2">
+                <!-- Primary Hero CTA: Scan Physical ID Card with Camera -->
+                <button id="openCameraScannerBtn" type="button" class="w-full py-3 px-4 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-black text-sm shadow-lg shadow-yellow-400/10 flex items-center justify-center gap-2.5 transition active:scale-[0.98]">
+                    <i data-lucide="camera" class="w-5 h-5 shrink-0"></i>
+                    <span id="primaryScanBtnText">Scan ID Card with Camera</span>
+                </button>
+
                 <!-- Apple Wallet Button -->
                 <button id="addToAppleWalletBtn" type="button" class="w-full py-3 px-4 rounded-2xl bg-black hover:bg-zinc-900 text-white font-bold text-sm border border-zinc-700/80 shadow-lg flex items-center justify-center gap-3 transition active:scale-[0.98]">
                     <svg class="w-5 h-5 shrink-0" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -196,17 +206,23 @@
                     <span>Add to Apple Wallet</span>
                 </button>
 
-                <!-- Two Secondary Quick Buttons -->
-                <div class="grid grid-cols-2 gap-2">
-                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95 text-center">
-                        <i data-lucide="camera" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
-                        <span id="uploadBtnText" class="truncate">Upload ID / HEIC</span>
+                <!-- Secondary Quick Row: iOS Native Camera, Photo Library (HEIC), Save Pass -->
+                <div class="grid grid-cols-3 gap-1.5">
+                    <label for="cameraCaptureInput" class="cursor-pointer flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95 text-center">
+                        <i data-lucide="aperture" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
+                        <span class="truncate">iOS Camera</span>
+                    </label>
+                    <input id="cameraCaptureInput" type="file" accept="image/*" capture="environment" class="hidden">
+
+                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95 text-center">
+                        <i data-lucide="image" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
+                        <span id="uploadBtnText" class="truncate">Photos / HEIC</span>
                     </label>
                     <input id="photoUploadInput" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" class="hidden">
 
-                    <button id="mainShareBtn" type="button" class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs shadow transition active:scale-95">
-                        <i data-lucide="share" class="w-3.5 h-3.5 shrink-0"></i>
-                        <span>Save to iPhone</span>
+                    <button id="mainShareBtn" type="button" class="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition active:scale-95">
+                        <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00] shrink-0"></i>
+                        <span class="truncate">Save Image</span>
                     </button>
                 </div>
             </div>
@@ -228,7 +244,7 @@
                 </button>
             </div>
 
-            <!-- TAB 1: Student Information (Blank by default, auto-filled from uploaded ID photo) -->
+            <!-- TAB 1: Student Information (Blank by default, auto-filled from camera or uploaded ID photo) -->
             <section id="tabInfoSection" class="p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
                 <div class="flex items-center justify-between gap-2">
                     <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Cardholder Details</span>
@@ -242,19 +258,41 @@
                     </div>
                 </div>
 
-                <!-- Auto-Fill Upload Banner -->
-                <label for="photoUploadInput" class="cursor-pointer flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/90 border border-dashed border-[#f5dc00]/45 hover:border-[#f5dc00] transition active:scale-[0.99]">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-xl bg-[#f5dc00]/15 flex items-center justify-center text-[#f5dc00] shrink-0">
-                            <i data-lucide="scan-text" class="w-4 h-4"></i>
+                <!-- Camera-First Auto-Fill Scanner Card -->
+                <div class="p-3 rounded-2xl bg-slate-950/90 border border-[#f5dc00]/40 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-[#f5dc00]/15 flex items-center justify-center text-[#f5dc00] shrink-0">
+                                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-xs font-extrabold text-white truncate">Take a Picture of Your Physical ID</div>
+                                <div id="ocrStatusLabel" class="text-[11px] text-slate-400 truncate">Auto-rotates card, crops portrait &amp; reads text</div>
+                            </div>
                         </div>
-                        <div class="min-w-0">
-                            <div class="text-xs font-bold text-white truncate">Upload ID Photo to Auto-Fill</div>
-                            <div id="ocrStatusLabel" class="text-[11px] text-slate-400 truncate">Reads name, ID #, grade &amp; year from picture</div>
+                        <span id="detectedPoseBadge" class="hidden shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-[10px]">Aligned</span>
+                    </div>
+
+                    <!-- Detected Portrait & Card Status Strip (Appears after scan) -->
+                    <div id="detectedCardPreviewBar" class="hidden items-center gap-2.5 p-2 rounded-xl bg-slate-900/90 border border-slate-800">
+                        <canvas id="detectedPortraitThumbCanvas" width="90" height="114" class="w-10 h-12 rounded-lg border border-[#f5dc00] bg-[#4aa8d8] shrink-0"></canvas>
+                        <div class="min-w-0 flex-1">
+                            <div id="detectedCardSummaryTitle" class="text-[11px] font-bold text-white truncate">Portrait &amp; ID Card Extracted</div>
+                            <div id="detectedCardSummarySub" class="text-[10px] text-slate-400 truncate">Auto-deskewed upright from photo</div>
                         </div>
                     </div>
-                    <span class="shrink-0 px-2.5 py-1.5 rounded-lg bg-[#f5dc00] text-slate-950 font-extrabold text-[11px]">Upload</span>
-                </label>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="infoTakePictureBtn" type="button" class="py-2 px-3 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95">
+                            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                            <span>Take Picture</span>
+                        </button>
+                        <label for="photoUploadInput" class="cursor-pointer py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95 text-center">
+                            <i data-lucide="image-plus" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                            <span>Upload Photo</span>
+                        </label>
+                    </div>
+                </div>
 
                 <div class="space-y-3">
                     <div class="grid grid-cols-2 gap-2.5">
@@ -297,17 +335,23 @@
             <!-- TAB 2: Photo Upload & Adjustment -->
             <section id="tabPhotoSection" class="hidden p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Upload &amp; Alignment</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Capture &amp; Alignment</span>
                     <button id="resetCropBtn" type="button" class="text-[11px] font-semibold text-slate-300 hover:text-white">
                         Reset Zoom &amp; Pan
                     </button>
                 </div>
 
-                <!-- Friendly Photo Upload Button (HEIC supported) -->
-                <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-2 p-3 rounded-2xl bg-slate-950 border border-dashed border-[#f5dc00]/50 hover:border-[#f5dc00] transition active:scale-[0.99] text-center">
-                    <i data-lucide="image-plus" class="w-4 h-4 text-[#f5dc00]"></i>
-                    <span class="text-xs font-bold text-white">Choose ID Photo / HEIC or Take Picture</span>
-                </label>
+                <!-- Camera & Upload Buttons -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="photoTabCameraBtn" type="button" class="flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs transition active:scale-[0.99]">
+                        <i data-lucide="camera" class="w-4 h-4"></i>
+                        <span>Scan with Camera</span>
+                    </button>
+                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-1.5 p-3 rounded-2xl bg-slate-950 border border-dashed border-[#f5dc00]/50 hover:border-[#f5dc00] transition active:scale-[0.99] text-center">
+                        <i data-lucide="image-plus" class="w-4 h-4 text-[#f5dc00]"></i>
+                        <span class="text-xs font-bold text-white">Upload / HEIC</span>
+                    </label>
+                </div>
 
                 <!-- Photo Mode Selector (Selfie vs Extract from ID card) -->
                 <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-bold">
@@ -331,7 +375,7 @@
 
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <label for="rotateSlider" class="text-slate-400">Straighten</label>
+                            <label for="rotateSlider" class="text-slate-400">Fine Rotate</label>
                             <span id="rotateLabel" class="mono-font text-[#f5dc00] font-bold">0°</span>
                         </div>
                         <input id="rotateSlider" type="range" min="-15" max="15" step="0.1" value="0" aria-valuetext="0 degrees">
@@ -371,6 +415,70 @@
 
         </div>
     </main>
+
+    <!-- In-App Live iPhone Camera ID Scanner Modal -->
+    <dialog id="cameraScannerModal" class="w-full h-full bg-black text-white">
+        <div class="w-full h-full flex flex-col justify-between p-4 select-none" style="padding-top: max(0.75rem, var(--safe-top)); padding-bottom: max(1rem, var(--safe-bottom));">
+            <!-- Top Bar -->
+            <div class="w-full max-w-md mx-auto flex items-center justify-between z-10">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#f5dc00] animate-pulse"></span>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-white">Scan Physical WHS ID Card</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="toggleTorchBtn" type="button" class="hidden px-3 py-1.5 rounded-full bg-slate-800/90 text-white text-xs font-bold border border-slate-700">
+                        Flash
+                    </button>
+                    <button id="closeCameraScannerModalBtn" type="button" class="px-3.5 py-1.5 rounded-full bg-slate-800/90 text-white text-xs font-bold border border-slate-700">
+                        Close
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Video Viewfinder with CR80 Card Alignment Overlay -->
+            <div class="relative flex-1 w-full max-w-md mx-auto my-2.5 rounded-3xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center">
+                <video id="liveCameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+                <!-- Alignment Guide Overlay -->
+                <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-5">
+                    <div class="relative w-full max-w-[260px] aspect-[638/1012] rounded-[22px] border-2 border-[#f5dc00] shadow-[0_0_0_9999px_rgba(3,7,18,0.58)]">
+                        <!-- Left yellow strip guide -->
+                        <div class="absolute inset-y-0 left-0 w-[14.5%] bg-[#f5dc00]/20 border-r border-[#f5dc00]/50 rounded-l-[20px]"></div>
+                        <!-- Top-right grade box guide -->
+                        <div class="absolute top-[14%] right-[4%] w-[16%] h-[6.5%] border border-[#f5dc00]/70 bg-[#f5dc00]/15 rounded-sm"></div>
+                        <!-- Center Portrait Box guide -->
+                        <div class="absolute left-[25%] top-[38%] w-[49%] h-[39%] border-2 border-dashed border-[#f5dc00]/90 rounded-md flex items-center justify-center">
+                            <span class="px-2 py-0.5 rounded bg-black/60 text-[#f5dc00] text-[10px] font-bold uppercase tracking-wider">Portrait</span>
+                        </div>
+                        <!-- Bottom Name & ID guide -->
+                        <div class="absolute left-[23%] right-[20%] bottom-[5%] h-[16%] border border-dashed border-white/50 rounded-md flex items-center justify-center">
+                            <span class="text-[10px] font-bold text-white/80 uppercase tracking-wider">Name &amp; 6-Digit ID</span>
+                        </div>
+                    </div>
+                    <p id="cameraGuideHintText" class="mt-3 px-3 py-1 rounded-full bg-black/75 text-[11px] font-semibold text-slate-200 text-center">
+                        Center your ID card in the frame (any angle works!)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Shutter & Fallback Controls -->
+            <div class="w-full max-w-md mx-auto flex items-center justify-between gap-3 z-10">
+                <label for="cameraCaptureInput" class="cursor-pointer flex-1 py-2.5 px-3 rounded-2xl bg-slate-900 border border-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 text-center">
+                    <i data-lucide="smartphone" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                    <span>iOS Camera</span>
+                </label>
+
+                <button id="captureCameraFrameBtn" type="button" aria-label="Take picture of ID card" class="w-16 h-16 shrink-0 rounded-full bg-white p-1.5 border-4 border-[#f5dc00] shadow-xl active:scale-90 transition flex items-center justify-center">
+                    <span class="w-full h-full rounded-full bg-[#f5dc00] block"></span>
+                </button>
+
+                <label for="photoUploadInput" class="cursor-pointer flex-1 py-2.5 px-3 rounded-2xl bg-slate-900 border border-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 text-center">
+                    <i data-lucide="image" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                    <span>Photos</span>
+                </label>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Scanner Modal Dialog -->
     <dialog id="scannerModal" class="w-full h-full bg-black text-white">
@@ -523,13 +631,16 @@
             dockHeight: 380,
 
             uploadedImage: null,
+            rawUploadedImage: null,
+            rectifiedCardCanvas: null,
+            lastDetectedPose: null,
             zoom: 1.0,
             rotation: 0,
             panX: 0,
             panY: 0,
 
             dissectedFullCard: { x: 0.1367, y: 0.2627, w: 0.5677, h: 0.6748 },
-            dissectedPortrait: { x: 0.2810, y: 0.5175, w: 0.2800, h: 0.2705 }
+            dissectedPortrait: { x: 0.2630, y: 0.3920, w: 0.4540, h: 0.3710 }
         };
 
         const passCanvas = document.getElementById('passCanvas');
@@ -537,6 +648,8 @@
         let wakeLockSentinel = null;
         let toastTimeout = null;
         let tesseractWorkerPromise = null;
+        let activeCameraStream = null;
+        let cameraTorchEnabled = false;
 
         function showStatusToast(message, isLoading = false, durationMs = 2600) {
             const toast = document.getElementById('statusToast');
@@ -879,7 +992,9 @@
             targetCtx.clip();
 
             if (state.uploadedImage) {
-                const img = state.uploadedImage;
+                const img = (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas)
+                    ? state.rectifiedCardCanvas
+                    : (state.rawUploadedImage || state.uploadedImage);
                 let sx = 0, sy = 0, sw = img.width, sh = img.height;
 
                 if (state.photoMode === 'extract_from_id') {
@@ -930,13 +1045,13 @@
                 targetCtx.fill();
 
                 if (showUploadHint) {
-                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-                    roundRectPath(targetCtx, portX + 24 * scale, portY + portH - 86 * scale, portW - 48 * scale, 56 * scale, 14 * scale);
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+                    roundRectPath(targetCtx, portX + 20 * scale, portY + portH - 86 * scale, portW - 40 * scale, 56 * scale, 14 * scale);
                     targetCtx.fill();
                     targetCtx.fillStyle = '#f5dc00';
-                    targetCtx.font = `800 ${Math.round(19 * scale)}px Inter, sans-serif`;
+                    targetCtx.font = `800 ${Math.round(18 * scale)}px Inter, sans-serif`;
                     targetCtx.textAlign = 'center';
-                    targetCtx.fillText('TAP TO UPLOAD ID PHOTO', portX + portW / 2, portY + portH - 51 * scale);
+                    targetCtx.fillText('TAP TO SCAN ID WITH CAMERA', portX + portW / 2, portY + portH - 51 * scale);
                 }
             }
             targetCtx.restore();
@@ -1127,7 +1242,7 @@
                     ctx.fillStyle = '#64748b';
                     ctx.font = '800 28px Inter, Arial, sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('UPLOAD ID PHOTO TO AUTO-FILL BARCODE', CARD_W / 2, dockY + dockH / 2 + 10);
+                    ctx.fillText('SCAN ID CARD TO AUTO-FILL BARCODE', CARD_W / 2, dockY + dockH / 2 + 10);
                 }
 
                 ctx.restore();
@@ -1235,425 +1350,788 @@
         }
 
         // ============================================================================
-        // AUTOMATIC ID CARD VISION & OCR TEXT EXTRACTION ENGINE
+        // AUTOMATIC ID CARD POSE DETECTION, BILINEAR RECTIFICATION, PORTRAIT CROP & OCR
         // ============================================================================
 
-        const IGNORED_CARD_WORDS = new Set([
-            'WHITNEY', 'HIGH', 'SCHOOL', 'WILDCATS', 'WILDCAT', 'STUDENT',
-            'CARD', 'GRADE', 'YEAR', 'ASB', 'CERRITOS', 'SHOEMAKER',
-            'ABC', 'ABCUSD', 'UNIFIED', 'DISTRICT', 'GRETCHEN', 'CA'
-        ]);
-
-        /**
-         * Renders a cropped region of `img` where light/white/yellow text on a dark navy card
-         * background is inverted and contrast-stretched into crisp black text on a pure white background.
-         */
-        function createInvertedLightTextCrop(img, normRect, targetWidth = 540, useYellowChannel = false, anchorPrefix = '') {
-            const sx = Math.max(0, Math.round(img.width * normRect.x));
-            const sy = Math.max(0, Math.round(img.height * normRect.y));
-            const sw = Math.min(img.width - sx, Math.max(16, Math.round(img.width * normRect.w)));
-            const sh = Math.min(img.height - sy, Math.max(16, Math.round(img.height * normRect.h)));
-
-            const scale = targetWidth / sw;
-            const drawW = Math.round(sw * scale);
-            const drawH = Math.round(sh * scale);
-
-            const tmpCanvas = document.createElement('canvas');
-            tmpCanvas.width = drawW;
-            tmpCanvas.height = drawH;
-            const tmpCtx = tmpCanvas.getContext('2d');
-            tmpCtx.drawImage(img, sx, sy, sw, sh, 0, 0, drawW, drawH);
-
-            const imgData = tmpCtx.getImageData(0, 0, drawW, drawH);
-            const data = imgData.data;
-            const numPixels = drawW * drawH;
-            const signals = new Float32Array(numPixels);
-            const hist = new Uint32Array(256);
-
-            for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const sig = useYellowChannel
-                    ? (r * 0.52 + g * 0.48)
-                    : Math.max(0.299 * r + 0.587 * g + 0.114 * b, (r + g) * 0.48);
-                const clamped = Math.max(0, Math.min(255, Math.round(sig)));
-                signals[p] = sig;
-                hist[clamped]++;
-            }
-
-            // Find 30th percentile (dark card background) and 96th percentile (bright text)
-            let cum = 0;
-            let p30 = 45, p96 = 210;
-            for (let v = 0; v < 256; v++) {
-                cum += hist[v];
-                if (cum <= numPixels * 0.30) p30 = v;
-                if (cum <= numPixels * 0.96) p96 = v;
-            }
-
-            const range = Math.max(30, p96 - p30);
-            const lowCut = p30 + range * 0.24;
-            const highCut = p96 - range * 0.06;
-            const denom = Math.max(15, highCut - lowCut);
-
-            for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-                const norm = Math.max(0, Math.min(1, (signals[p] - lowCut) / denom));
-                // Invert so bright text (norm -> 1) becomes black (0) on white background (255)
-                const out = Math.round((1 - Math.pow(norm, 1.15)) * 255);
-                data[i] = out;
-                data[i + 1] = out;
-                data[i + 2] = out;
-                data[i + 3] = 255;
-            }
-            tmpCtx.putImageData(imgData, 0, 0);
-
-            const pad = 24;
-            const prefixW = anchorPrefix ? 145 : 0;
-            const outCanvas = document.createElement('canvas');
-            outCanvas.width = drawW + pad * 2 + prefixW;
-            outCanvas.height = drawH + pad * 2;
-            const outCtx = outCanvas.getContext('2d');
-            outCtx.fillStyle = '#ffffff';
-            outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-
-            if (anchorPrefix) {
-                outCtx.fillStyle = '#000000';
-                outCtx.font = `800 ${Math.min(44, Math.max(24, Math.round(drawH * 0.45)))}px Arial, sans-serif`;
-                outCtx.textBaseline = 'middle';
-                outCtx.fillText(anchorPrefix, pad, outCanvas.height / 2);
-            }
-
-            outCtx.drawImage(tmpCanvas, pad + prefixW, pad);
-            return outCanvas;
-        }
-
-        /**
-         * Auto-locates the bright yellow Grade box in the top-right region of a candidate card,
-         * strips the outer dark card background so only the dark Grade digits inside the yellow box
-         * remain on a pure white background, and prefixes with "GRADE " for reliable OCR line locking.
-         */
-        function createIsolatedGradeBoxCrop(img, cardRect) {
-            const searchRect = {
-                x: cardRect.x + cardRect.w * 0.68,
-                y: cardRect.y + cardRect.h * 0.10,
-                w: cardRect.w * 0.30,
-                h: cardRect.h * 0.16
-            };
-
-            const sx = Math.max(0, Math.round(img.width * searchRect.x));
-            const sy = Math.max(0, Math.round(img.height * searchRect.y));
-            const sw = Math.min(img.width - sx, Math.max(16, Math.round(img.width * searchRect.w)));
-            const sh = Math.min(img.height - sy, Math.max(16, Math.round(img.height * searchRect.h)));
-
-            const scale = 300 / sw;
-            const w = Math.round(sw * scale);
-            const h = Math.round(sh * scale);
-
+        function imageToRgbaObj(img) {
+            const w = img.naturalWidth || img.width;
+            const h = img.naturalHeight || img.height;
             const c = document.createElement('canvas');
             c.width = w;
             c.height = h;
             const cCtx = c.getContext('2d');
-            cCtx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
-
+            cCtx.drawImage(img, 0, 0, w, h);
             const imgData = cCtx.getImageData(0, 0, w, h);
-            const d = imgData.data;
+            return { width: w, height: h, rgba: imgData.data };
+        }
 
-            // Locate the yellow grade box bounds [minX, maxX, minY, maxY]
-            let minX = w, maxX = 0, minY = h, maxY = 0, yellowCount = 0;
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const idx = (y * w + x) * 4;
-                    const r = d[idx], g = d[idx + 1], b = d[idx + 2];
-                    if (r > 135 && g > 115 && (r - b) > 35 && (g - b) > 22) {
-                        if (x < minX) minX = x;
-                        if (x > maxX) maxX = x;
-                        if (y < minY) minY = y;
-                        if (y > maxY) maxY = y;
-                        yellowCount++;
-                    }
-                }
-            }
-
-            // Default fallback box if yellow detection is weak
-            if (yellowCount < 40 || (maxX - minX) < 20 || (maxY - minY) < 15) {
-                minX = Math.round(w * 0.25);
-                maxX = Math.round(w * 0.90);
-                minY = Math.round(h * 0.20);
-                maxY = Math.round(h * 0.78);
-            } else {
-                // Inset slightly so dark navy pixels outside the yellow box are excluded
-                const insetX = Math.round((maxX - minX) * 0.08);
-                const insetY = Math.round((maxY - minY) * 0.10);
-                minX += insetX;
-                maxX -= insetX;
-                minY += insetY;
-                maxY -= insetY;
-            }
-
-            // Inside the yellow box, yellow background -> white (255), dark digits -> black (0)
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const idx = (y * w + x) * 4;
-                    if (x < minX || x > maxX || y < minY || y > maxY) {
-                        d[idx] = 255; d[idx + 1] = 255; d[idx + 2] = 255; d[idx + 3] = 255;
-                    } else {
-                        const r = d[idx], g = d[idx + 1];
-                        const rg = (r + g) * 0.5;
-                        const val = rg < 135 ? 0 : 255;
-                        d[idx] = val; d[idx + 1] = val; d[idx + 2] = val; d[idx + 3] = 255;
-                    }
-                }
-            }
+        function rgbaObjToCanvas(rgbaObj) {
+            const c = document.createElement('canvas');
+            c.width = rgbaObj.width;
+            c.height = rgbaObj.height;
+            const cCtx = c.getContext('2d');
+            const imgData = new ImageData(new Uint8ClampedArray(rgbaObj.rgba), rgbaObj.width, rgbaObj.height);
             cCtx.putImageData(imgData, 0, 0);
-
-            const boxW = Math.max(16, maxX - minX);
-            const boxH = Math.max(16, maxY - minY);
-            const outCanvas = document.createElement('canvas');
-            outCanvas.width = 360;
-            outCanvas.height = 120;
-            const outCtx = outCanvas.getContext('2d');
-            outCtx.fillStyle = '#ffffff';
-            outCtx.fillRect(0, 0, outCanvas.width, outCanvas.height);
-
-            // Prefix anchor text so Tesseract locks onto the baseline for 1-2 digit grades
-            outCtx.fillStyle = '#000000';
-            outCtx.font = '800 42px Arial, sans-serif';
-            outCtx.textBaseline = 'middle';
-            outCtx.fillText('GRADE', 18, 60);
-
-            const targetH = 74;
-            const targetW = Math.min(160, Math.round((boxW / boxH) * targetH));
-            outCtx.drawImage(c, minX, minY, boxW, boxH, 185, Math.round((120 - targetH) / 2), targetW, targetH);
-            return outCanvas;
+            return c;
         }
 
         /**
-         * Detects candidate WHS card bounding boxes in the uploaded image using color landmarks
-         * (left yellow vertical bar, sky-blue portrait backdrop, and yellow borders).
+         * Full 360° 4-DOF pose detector for the physical Whitney High School ID card.
+         * Uses multi-channel landmarks (left yellow vertical bar, top-right yellow grade box,
+         * sky-blue portrait backdrop, white right barcode, and dark navy card interior)
+         * anchored around the sky-blue portrait centroid with Nelder-Mead coordinate refinement.
          */
-        function detectCandidateCardRects(img) {
-            const candidates = [];
+        function detectCardPose(img) {
+            const maxDim = 260;
+            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const sw = Math.max(40, Math.round(img.width * scale));
+            const sh = Math.max(40, Math.round(img.height * scale));
 
-            // 1. Dynamically scan for WHS Yellow & Sky-Blue portrait landmarks
-            try {
-                const scanW = 300;
-                const scanH = Math.max(100, Math.round((img.height / img.width) * scanW));
-                const c = document.createElement('canvas');
-                c.width = scanW;
-                c.height = scanH;
-                const cCtx = c.getContext('2d');
-                cCtx.drawImage(img, 0, 0, scanW, scanH);
-                const d = cCtx.getImageData(0, 0, scanW, scanH).data;
+            const feat = new Float32Array(sw * sh * 4);
+            let skyX = 0, skyY = 0, skyW = 0;
 
-                let yMinX = scanW, yMaxX = 0, yMinY = scanH, yMaxY = 0, yellowCount = 0;
-                let bMinX = scanW, bMaxX = 0, bMinY = scanH, bMaxY = 0, blueCount = 0;
+            for (let y = 0; y < sh; y++) {
+                const srcY = Math.min(img.height - 1, Math.floor((y + 0.5) / scale));
+                for (let x = 0; x < sw; x++) {
+                    const srcX = Math.min(img.width - 1, Math.floor((x + 0.5) / scale));
+                    const idx = (srcY * img.width + srcX) * 4;
+                    const r = img.rgba[idx], g = img.rgba[idx + 1], b = img.rgba[idx + 2];
+                    const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+                    const chroma = maxC - minC;
+                    const p = (y * sw + x) * 4;
 
-                for (let y = 0; y < scanH; y++) {
-                    for (let x = 0; x < scanW; x++) {
-                        const i = (y * scanW + x) * 4;
-                        const r = d[i], g = d[i + 1], b = d[i + 2];
-                        // WHS Yellow
-                        if (r > 165 && g > 140 && b < 110 && (r - b) > 70 && (g - b) > 50) {
-                            if (x < yMinX) yMinX = x;
-                            if (x > yMaxX) yMaxX = x;
-                            if (y < yMinY) yMinY = y;
-                            if (y > yMaxY) yMaxY = y;
-                            yellowCount++;
-                        }
-                        // WHS Sky-Blue Portrait Backdrop
-                        if (b > 135 && g > 110 && (b - r) > 30 && (g - r) > 12) {
-                            if (x < bMinX) bMinX = x;
-                            if (x > bMaxX) bMaxX = x;
-                            if (y < bMinY) bMinY = y;
-                            if (y > bMaxY) bMaxY = y;
-                            blueCount++;
+                    if (r > 130 && g > 120 && (r - b) > 40 && (g - b) > 30 && Math.abs(r - g) < 52) {
+                        feat[p + 0] = 1.0;
+                    }
+                    if (b > 105 && g > 95 && (b - r) > 20 && (g - r) > 10) {
+                        const w = Math.min(1.0, (b - r) / 45);
+                        feat[p + 1] = w;
+                        skyX += x * w;
+                        skyY += y * w;
+                        skyW += w;
+                    }
+                    if (maxC >= 16 && maxC <= 125 && (r - b) <= 28 && chroma <= 42) {
+                        feat[p + 2] = 1.0;
+                    }
+                    if (minC >= 145 && chroma <= 40) {
+                        feat[p + 3] = 1.0;
+                    }
+                }
+            }
+
+            const samplePts = [];
+            for (let v = 0.03; v <= 0.97; v += 0.06) {
+                samplePts.push({ u: 0.04, v, ch: 0, posW: 1.8, negW: -0.3 });
+                samplePts.push({ u: 0.11, v, ch: 0, posW: 2.2, negW: -0.5 });
+            }
+            for (let v = 0.05; v <= 0.95; v += 0.10) {
+                samplePts.push({ u: -0.035, v, ch: 0, posW: -2.8, negW: 0.5 });
+                samplePts.push({ u: -0.075, v, ch: 0, posW: -2.5, negW: 0.4 });
+                samplePts.push({ u: 0.165, v, ch: 0, posW: -2.8, negW: 0.5 });
+                samplePts.push({ u: 0.205, v, ch: 0, posW: -2.5, negW: 0.4 });
+            }
+            for (const u of [0.04, 0.08, 0.11]) {
+                samplePts.push({ u, v: -0.03, ch: 0, posW: -3.2, negW: 0.6 });
+                samplePts.push({ u, v: -0.065, ch: 0, posW: -3.0, negW: 0.5 });
+                samplePts.push({ u, v: 1.03, ch: 0, posW: -3.2, negW: 0.6 });
+                samplePts.push({ u, v: 1.065, ch: 0, posW: -3.0, negW: 0.5 });
+            }
+            for (const u of [0.70, 0.77, 0.84]) {
+                samplePts.push({ u, v: 0.17, ch: 0, posW: 2.2, negW: -0.6 });
+                samplePts.push({ u, v: 0.21, ch: 0, posW: 2.2, negW: -0.6 });
+                samplePts.push({ u, v: -0.03, ch: 0, posW: -2.0, negW: 0.3 });
+                samplePts.push({ u, v: 0.28, ch: 0, posW: -2.0, negW: 0.3 });
+            }
+            const skyIn = [
+                [0.29, 0.41], [0.50, 0.40], [0.71, 0.41],
+                [0.29, 0.48], [0.71, 0.48],
+                [0.29, 0.55], [0.71, 0.55],
+                [0.29, 0.61], [0.71, 0.61]
+            ];
+            for (const [u, v] of skyIn) {
+                samplePts.push({ u, v, ch: 1, posW: 3.2, negW: -0.8 });
+            }
+            const skyOut = [
+                [0.21, 0.45], [0.21, 0.55],
+                [0.79, 0.45], [0.79, 0.55],
+                [0.35, 0.33], [0.50, 0.33], [0.65, 0.33],
+                [0.35, 0.82], [0.50, 0.82], [0.65, 0.82]
+            ];
+            for (const [u, v] of skyOut) {
+                samplePts.push({ u, v, ch: 1, posW: -3.5, negW: 0.4 });
+            }
+            for (let v = 0.42; v <= 0.76; v += 0.07) {
+                samplePts.push({ u: 0.82, v, ch: 3, posW: 1.6, negW: -0.3 });
+                samplePts.push({ u: 0.90, v, ch: 3, posW: 1.6, negW: -0.3 });
+            }
+            const darkCoords = [
+                [0.20, 0.15], [0.20, 0.35], [0.20, 0.55], [0.20, 0.75], [0.20, 0.90],
+                [0.75, 0.32], [0.90, 0.32], [0.85, 0.88]
+            ];
+            for (const [u, v] of darkCoords) {
+                samplePts.push({ u, v, ch: 2, posW: 1.2, negW: -0.3 });
+            }
+
+            const aspect = 0.6303;
+
+            function scorePose(cx, cy, cardH, angleRad) {
+                const cardW = cardH * aspect;
+                const cosA = Math.cos(angleRad);
+                const sinA = Math.sin(angleRad);
+                let score = 0;
+
+                for (let i = 0; i < samplePts.length; i++) {
+                    const pt = samplePts[i];
+                    const dx = (pt.u - 0.5) * cardW;
+                    const dy = (pt.v - 0.5) * cardH;
+                    const px = Math.round(cx + dx * cosA - dy * sinA);
+                    const py = Math.round(cy + dx * sinA + dy * cosA);
+
+                    if (px < 0 || px >= sw || py < 0 || py >= sh) {
+                        score += pt.posW < 0 ? pt.negW * 0.5 : pt.negW * 1.5;
+                        continue;
+                    }
+                    const val = feat[(py * sw + px) * 4 + pt.ch];
+                    score += val > 0 ? pt.posW * val : pt.negW;
+                }
+                return score;
+            }
+
+            const hasSky = skyW > 15;
+            const anchorX = hasSky ? (skyX / skyW) : (sw * 0.5);
+            const anchorY = hasSky ? (skyY / skyW) : (sh * 0.5);
+
+            let best = { score: -Infinity, cx: anchorX, cy: anchorY, cardH: Math.min(sw, sh) * 0.7, angle: 0 };
+            const minDim = Math.min(sw, sh);
+
+            for (let deg = 0; deg < 360; deg += 4) {
+                const rad = (deg * Math.PI) / 180;
+                const cosA = Math.cos(rad);
+                const sinA = Math.sin(rad);
+                for (let hFrac = 0.42; hFrac <= 1.26; hFrac += 0.06) {
+                    const cardH = minDim * hFrac;
+                    const shifts = hasSky ? [-0.06, 0, 0.06] : [-0.16, 0, 0.16];
+                    for (const su of shifts) {
+                        for (const sv of shifts) {
+                            const dx = su * cardH * aspect;
+                            const dy = (sv + 0.01) * cardH;
+                            const cx = anchorX + dx * cosA - dy * sinA;
+                            const cy = anchorY + dx * sinA + dy * cosA;
+                            const s = scorePose(cx, cy, cardH, rad);
+                            if (s > best.score) {
+                                best = { score: s, cx, cy, cardH, angle: rad };
+                            }
                         }
                     }
                 }
+            }
 
-                if (yellowCount > 120 && (yMaxY - yMinY) > scanH * 0.35) {
-                    const cardX = Math.max(0, (yMinX / scanW) - 0.01);
-                    const cardY = Math.max(0, (yMinY / scanH) - 0.01);
-                    const cardH = Math.min(1 - cardY, ((yMaxY - yMinY) / scanH) + 0.02);
-                    const rawW = ((yMaxX - yMinX) / scanW) / 0.94;
-                    const aspectW = (cardH * img.height * (CARD_W / CARD_H)) / img.width;
-                    const cardW = Math.min(1 - cardX, Math.max(rawW, aspectW));
-                    if (cardW > 0.25 && cardH > 0.35) {
-                        candidates.push({ x: cardX, y: cardY, w: cardW, h: cardH, source: 'detected' });
+            let stepPos = best.cardH * 0.04;
+            let stepH = best.cardH * 0.045;
+            let stepAng = (2.5 * Math.PI) / 180;
+
+            for (let iter = 0; iter < 6; iter++) {
+                let improved = true;
+                while (improved) {
+                    improved = false;
+                    const deltas = [
+                        [stepPos, 0, 0, 0], [-stepPos, 0, 0, 0],
+                        [0, stepPos, 0, 0], [0, -stepPos, 0, 0],
+                        [0, 0, stepH, 0], [0, 0, -stepH, 0],
+                        [0, 0, 0, stepAng], [0, 0, 0, -stepAng],
+                        [0, stepPos * 0.5, stepH * 0.8, 0], [0, -stepPos * 0.5, stepH * 0.8, 0],
+                        [0, stepPos * 0.5, -stepH * 0.8, 0], [0, -stepPos * 0.5, -stepH * 0.8, 0]
+                    ];
+                    for (const [dcx, dcy, dh, da] of deltas) {
+                        const s = scorePose(best.cx + dcx, best.cy + dcy, best.cardH + dh, best.angle + da);
+                        if (s > best.score) {
+                            best = {
+                                score: s,
+                                cx: best.cx + dcx,
+                                cy: best.cy + dcy,
+                                cardH: best.cardH + dh,
+                                angle: best.angle + da
+                            };
+                            improved = true;
+                        }
                     }
                 }
-            } catch (e) {}
-
-            // 2. Standard dissected card rect (calibrated for desk photos like IMG_1857)
-            candidates.push({
-                x: state.dissectedFullCard.x,
-                y: state.dissectedFullCard.y,
-                w: state.dissectedFullCard.w,
-                h: state.dissectedFullCard.h,
-                source: 'dissected'
-            });
-
-            // 3. Full-frame card rect (for tightly cropped ID card images)
-            candidates.push({
-                x: 0.0,
-                y: 0.0,
-                w: 1.0,
-                h: 1.0,
-                source: 'full'
-            });
-
-            return candidates;
-        }
-
-        function toTitleCaseName(str) {
-            const clean = str.trim().replace(/\s+/g, ' ');
-            if (!clean) return '';
-            if (clean === clean.toUpperCase() || clean === clean.toLowerCase()) {
-                return clean.replace(/\b([A-Za-z])([A-Za-z']*)/g, (_, first, rest) =>
-                    first.toUpperCase() + rest.toLowerCase()
-                );
+                stepPos *= 0.55;
+                stepH *= 0.55;
+                stepAng *= 0.55;
             }
-            return clean;
-        }
 
-        function isValidNameCandidate(wordOrLine) {
-            const cleaned = (wordOrLine || '')
-                .replace(/[^A-Za-z\-' ]/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-            if (cleaned.length < 2 || cleaned.length > 26) return false;
-            const tokens = cleaned.toUpperCase().split(' ');
-            for (const tok of tokens) {
-                if (IGNORED_CARD_WORDS.has(tok)) return false;
-            }
-            // Must contain at least one vowel
-            if (!/[AEIOUYaeiouy]/.test(cleaned)) return false;
-            return cleaned;
+            return {
+                cx: best.cx / scale,
+                cy: best.cy / scale,
+                cardW: (best.cardH * aspect) / scale,
+                cardH: best.cardH / scale,
+                angleRad: best.angle,
+                angleDeg: ((best.angle * 180) / Math.PI + 360) % 360,
+                score: best.score
+            };
         }
 
         /**
-         * Parses a candidate's Year+Grade lines and Bottom Name+ID lines.
+         * Bilinearly samples and deskews the detected physical ID card into a canonical
+         * upright 638x1012 CR80 image regardless of camera rotation (0°..360°).
          */
-        function parseCandidateBandLines(topLinesText, bottomLines) {
-            const result = {
-                firstName: '',
-                lastName: '',
-                studentId: '',
-                grade: '',
-                schoolYear: '',
-                score: 0
+        function rectifyCard(img, pose, outW = 638, outH = 1012) {
+            const out = new Uint8ClampedArray(outW * outH * 4);
+            const cosA = Math.cos(pose.angleRad);
+            const sinA = Math.sin(pose.angleRad);
+
+            const margin = 1.05;
+            const effW = pose.cardW * margin;
+            const effH = pose.cardH * margin;
+            const W = img.width, H = img.height, rgba = img.rgba;
+
+            for (let y = 0; y < outH; y++) {
+                const v = (y + 0.5) / outH - 0.5;
+                const dy = v * effH;
+                for (let x = 0; x < outW; x++) {
+                    const u = (x + 0.5) / outW - 0.5;
+                    const dx = u * effW;
+                    const fx = pose.cx + dx * cosA - dy * sinA;
+                    const fy = pose.cy + dx * sinA + dy * cosA;
+                    const dst = (y * outW + x) * 4;
+                    if (fx >= 0 && fx < W - 1 && fy >= 0 && fy < H - 1) {
+                        const ix = Math.floor(fx), iy = Math.floor(fy);
+                        const tx = fx - ix, ty = fy - iy;
+                        const w00 = (1 - tx) * (1 - ty);
+                        const w10 = tx * (1 - ty);
+                        const w01 = (1 - tx) * ty;
+                        const w11 = tx * ty;
+                        const s00 = (iy * W + ix) * 4;
+                        const s10 = s00 + 4;
+                        const s01 = s00 + W * 4;
+                        const s11 = s01 + 4;
+                        out[dst] = rgba[s00] * w00 + rgba[s10] * w10 + rgba[s01] * w01 + rgba[s11] * w11;
+                        out[dst + 1] = rgba[s00 + 1] * w00 + rgba[s10 + 1] * w10 + rgba[s01 + 1] * w01 + rgba[s11 + 1] * w11;
+                        out[dst + 2] = rgba[s00 + 2] * w00 + rgba[s10 + 2] * w10 + rgba[s01 + 2] * w01 + rgba[s11 + 2] * w11;
+                        out[dst + 3] = 255;
+                    } else {
+                        out[dst] = 28;
+                        out[dst + 1] = 35;
+                        out[dst + 2] = 45;
+                        out[dst + 3] = 255;
+                    }
+                }
+            }
+            return { width: outW, height: outH, rgba: out };
+        }
+
+        /**
+         * Locates the exact yellow portrait frame on the upright rectified card
+         * and returns the inner portrait crop coordinates (excluding the yellow frame).
+         */
+        function findPortraitBounds(rectImg) {
+            const W = rectImg.width, H = rectImg.height;
+            function isYel(x, y) {
+                const i = (y * W + x) * 4;
+                const r = rectImg.rgba[i], g = rectImg.rgba[i + 1], b = rectImg.rgba[i + 2];
+                return r > 130 && g > 120 && (r - b) > 35 && (g - b) > 25;
+            }
+
+            let bestBotY = Math.round(H * 0.775), bestBotHits = 0;
+            for (let y = Math.round(H * 0.72); y <= Math.round(H * 0.82); y++) {
+                let hits = 0;
+                for (let x = Math.round(W * 0.30); x <= Math.round(W * 0.68); x++) if (isYel(x, y)) hits++;
+                if (hits > bestBotHits) { bestBotHits = hits; bestBotY = y; }
+            }
+            const botV = bestBotHits > W * 0.12 ? bestBotY / H : 0.775;
+
+            let bestTopY = Math.round(H * 0.380), bestTopHits = 0;
+            for (let y = Math.round(H * 0.32); y <= Math.round(H * 0.43); y++) {
+                let hits = 0;
+                for (let x = Math.round(W * 0.30); x <= Math.round(W * 0.68); x++) if (isYel(x, y)) hits++;
+                if (hits > bestTopHits) { bestTopHits = hits; bestTopY = y; }
+            }
+            const topV = bestTopHits > W * 0.12 ? bestTopY / H : 0.380;
+
+            let bestLeftX = Math.round(W * 0.248), bestLeftHits = 0;
+            for (let x = Math.round(W * 0.20); x <= Math.round(W * 0.30); x++) {
+                let hits = 0;
+                for (let y = Math.round(H * 0.42); y <= Math.round(H * 0.74); y++) if (isYel(x, y)) hits++;
+                if (hits > bestLeftHits) { bestLeftHits = hits; bestLeftX = x; }
+            }
+            const leftU = bestLeftHits > H * 0.10 ? bestLeftX / W : 0.248;
+
+            let bestRightX = Math.round(W * 0.732), bestRightHits = 0;
+            for (let x = Math.round(W * 0.68); x <= Math.round(W * 0.78); x++) {
+                let hits = 0;
+                for (let y = Math.round(H * 0.42); y <= Math.round(H * 0.74); y++) if (isYel(x, y)) hits++;
+                if (hits > bestRightHits) { bestRightHits = hits; bestRightX = x; }
+            }
+            const rightU = bestRightHits > H * 0.10 ? bestRightX / W : 0.732;
+
+            return {
+                leftU: leftU + 0.015,
+                rightU: rightU - 0.015,
+                topV: topV + 0.012,
+                botV: botV - 0.012,
+                rawBotV: botV
+            };
+        }
+
+        function classifyGradeFromComponents(gradeGray, gw, gh) {
+            const visited = new Uint8Array(gw * gh);
+            const comps = [];
+            for (let y = 0; y < gh; y++) {
+                for (let x = 0; x < gw; x++) {
+                    const idx = y * gw + x;
+                    if (!visited[idx] && gradeGray[idx] < 150) {
+                        const q = [idx];
+                        visited[idx] = 1;
+                        let minX = x, maxX = x, minY = y, maxY = y, area = 0;
+                        while (q.length) {
+                            const cur = q.pop();
+                            area++;
+                            const cy = Math.floor(cur / gw), cx = cur % gw;
+                            if (cx < minX) minX = cx;
+                            if (cx > maxX) maxX = cx;
+                            if (cy < minY) minY = cy;
+                            if (cy > maxY) maxY = cy;
+                            for (const [nx, ny] of [[cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1]]) {
+                                if (nx >= 0 && nx < gw && ny >= 0 && ny < gh) {
+                                    const ni = ny * gw + nx;
+                                    if (!visited[ni] && gradeGray[ni] < 150) {
+                                        visited[ni] = 1;
+                                        q.push(ni);
+                                    }
+                                }
+                            }
+                        }
+                        const cw = maxX - minX + 1, ch = maxY - minY + 1;
+                        if (ch >= gh * 0.22 && area >= 15) {
+                            comps.push({ minX, maxX, minY, maxY, cw, ch, area, aspect: cw / ch });
+                        }
+                    }
+                }
+            }
+            comps.sort((a, b) => a.minX - b.minX);
+            if (comps.length === 2) {
+                const [, right] = comps;
+                if (right.aspect < 0.56) {
+                    return '11';
+                }
+                const midX = Math.round((right.minX + right.maxX) / 2);
+                const midY = Math.round((right.minY + right.maxY) / 2);
+                const centerVal = gradeGray[midY * gw + midX];
+                return centerVal > 180 ? '10' : '12';
+            }
+            return null;
+        }
+
+        function clearThinHorizontalBorders(gray, cw, ch, isSlice = false) {
+            const minRunW = 34;
+            const toClear = new Uint8Array(cw * ch);
+
+            for (let y = 0; y < ch; y++) {
+                const inTopZone = isSlice ? (y < ch * 0.22) : (y < ch * 0.14);
+                const inBotZone = isSlice ? (y > ch * 0.72) : (y > ch * 0.84);
+                if (!inTopZone && !inBotZone) continue;
+
+                let x = 0;
+                while (x < cw) {
+                    if (gray[y * cw + x] < 215) {
+                        const x0 = x;
+                        while (x < cw && (gray[y * cw + x] < 215 || (x + 1 < cw && gray[y * cw + x + 1] < 215))) x++;
+                        const runW = x - x0;
+                        if (runW >= minRunW) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                const ny = y + dy;
+                                if (ny >= 0 && ny < ch) {
+                                    for (let kx = x0; kx < x; kx++) toClear[ny * cw + kx] = 1;
+                                }
+                            }
+                        }
+                    } else {
+                        x++;
+                    }
+                }
+            }
+
+            for (let i = 0; i < cw * ch; i++) {
+                if (toClear[i]) gray[i] = 255;
+            }
+        }
+
+        function buildCleanSheet(rectImg) {
+            const W = rectImg.width, H = rectImg.height;
+            const pb = findPortraitBounds(rectImg);
+            const portBotV = pb.rawBotV;
+
+            // 1. Natural 3-line bottom block (First Name / Last Name / 6-Digit Student ID)
+            const u0 = 0.24, u1 = 0.762;
+            const v0 = Math.min(0.82, portBotV + 0.011);
+            const v1 = Math.min(0.992, portBotV + 0.205);
+            const x0 = Math.round(W * u0), x1 = Math.round(W * u1);
+            const y0 = Math.round(H * v0), y1 = Math.round(H * v1);
+            const cw = x1 - x0, ch = y1 - y0;
+
+            const rawLum = new Float32Array(cw * ch);
+            for (let y = 0; y < ch; y++) {
+                for (let x = 0; x < cw; x++) {
+                    const i = ((y0 + y) * W + (x0 + x)) * 4;
+                    const r = rectImg.rgba[i], g = rectImg.rgba[i + 1], b = rectImg.rgba[i + 2];
+                    const warmPenalty = Math.max(0, (r - b) - 25) * 0.8;
+                    rawLum[y * cw + x] = Math.max(0, 0.25 * r + 0.45 * g + 0.30 * b - warmPenalty);
+                }
+            }
+
+            const botGray = new Uint8ClampedArray(cw * ch);
+            for (let y = 0; y < ch; y++) {
+                const rx0 = (y > ch * 0.58) ? Math.round(cw * 0.16) : Math.round(cw * 0.04);
+                const rx1 = (y > ch * 0.68) ? Math.round(cw * 0.84) : Math.round(cw * 0.96);
+                const rowVals = [];
+                for (let x = rx0; x < rx1; x++) {
+                    if (x < cw * 0.16 && y < ch * 0.16) continue;
+                    rowVals.push(rawLum[y * cw + x]);
+                }
+                rowVals.sort((a, b) => a - b);
+                const bg = rowVals[Math.floor(rowVals.length * 0.25)] || 40;
+                const peak = rowVals[Math.floor(rowVals.length * 0.96)] || (bg + 60);
+                const span = Math.max(28, peak - bg);
+
+                for (let x = 0; x < cw; x++) {
+                    if ((x < cw * 0.16 && y < ch * 0.16) || x < rx0 || x >= rx1) {
+                        botGray[y * cw + x] = 255;
+                        continue;
+                    }
+                    const lum = rawLum[y * cw + x];
+                    const norm1 = Math.max(0, Math.min(1, (lum - (bg + span * 0.25)) / (span * 0.60)));
+                    botGray[y * cw + x] = Math.round(255 * (1 - Math.pow(norm1, 1.15)));
+                }
+            }
+            clearThinHorizontalBorders(botGray, cw, ch);
+
+            const idY0 = Math.floor(ch * 0.62);
+            const idH = ch - idY0;
+
+            const rawLumBilinear = (fx, fy) => {
+                const sx = Math.max(0, Math.min(W - 2, x0 + fx));
+                const sy = Math.max(0, Math.min(H - 2, y0 + fy));
+                const ix = Math.floor(sx), iy = Math.floor(sy);
+                const tx = sx - ix, ty = sy - iy;
+                const lumPx = (px, py) => {
+                    const i = (py * W + px) * 4;
+                    const r = rectImg.rgba[i], g = rectImg.rgba[i + 1], b = rectImg.rgba[i + 2];
+                    return Math.max(0, 0.25 * r + 0.45 * g + 0.30 * b - Math.max(0, (r - b) - 25) * 0.8);
+                };
+                const v00 = lumPx(ix, iy), v10 = lumPx(ix + 1, iy);
+                const v01 = lumPx(ix, iy + 1), v11 = lumPx(ix + 1, iy + 1);
+                return (v00 * (1 - tx) + v10 * tx) * (1 - ty) + (v01 * (1 - tx) + v11 * tx) * ty;
             };
 
-            // 1. Parse School Year (e.g. "26-27", "25-26")
-            const allText = `${topLinesText}\n${bottomLines.join('\n')}`;
-            const yearRegex = /\b(2\d)\s*[-–—/~., ]\s*(2\d)\b/g;
-            let ym;
-            while ((ym = yearRegex.exec(allText)) !== null) {
-                const y1 = parseInt(ym[1], 10);
-                const y2 = parseInt(ym[2], 10);
-                if (y2 === y1 + 1) {
-                    result.schoolYear = `${ym[1]}-${ym[2]}`;
-                    result.score += 2;
-                    break;
+            let bestSlope = 0, bestVar = -Infinity;
+            for (let slope = -0.06; slope <= 0.0601; slope += 0.005) {
+                const rowMeans = new Float32Array(ch + 12);
+                for (let y = 6; y < ch + 6; y++) {
+                    let s = 0;
+                    for (let x = Math.floor(cw * 0.20); x < Math.floor(cw * 0.80); x += 2) {
+                        s += rawLumBilinear(x, y + slope * (x - cw * 0.5));
+                    }
+                    rowMeans[y] = s;
+                }
+                let energy = 0;
+                for (let y = 8; y < ch + 4; y++) {
+                    const d = rowMeans[y + 1] - rowMeans[y - 1];
+                    energy += d * d;
+                }
+                if (energy > bestVar) {
+                    bestVar = energy;
+                    bestSlope = slope;
                 }
             }
 
-            // 2. Parse Grade (7..12) from Top Grade Strip
-            const textWithoutYear = topLinesText.replace(/\b2\d\s*[-–—/~., ]\s*2\d\b/g, ' ');
-            const gradeExplicit = textWithoutYear.match(/GRADE\s*([0-9Il|!]{1,2})/i);
-            if (gradeExplicit) {
-                let rawG = gradeExplicit[1]
-                    .replace(/^[Il|!]{2}$/, '11')
-                    .replace(/^[1Il|!][Il|!]$/, '11')
-                    .replace(/^1[O0]$/i, '10')
-                    .replace(/^12$/, '12');
-                if (['7', '8', '9', '10', '11', '12'].includes(rawG)) {
-                    result.grade = rawG;
-                    result.score += 2;
-                }
-            }
-            if (!result.grade) {
-                const standaloneGrade = textWithoutYear.match(/\b(10|11|12|7|8|9)\b/);
-                if (standaloneGrade) {
-                    result.grade = standaloneGrade[1];
-                    result.score += 1;
-                } else if (/\b[Il|!]{2}\b/.test(textWithoutYear)) {
-                    result.grade = '11';
-                    result.score += 1;
+            const idH2 = idH + 10;
+            const sharpArr = new Float32Array(cw * idH2);
+            for (let y = 0; y < idH2; y++) {
+                for (let x = 0; x < cw; x++) {
+                    const fy = (idY0 + 2 + y) + bestSlope * (x - cw * 0.5);
+                    const c = rawLumBilinear(x, fy);
+                    const u3 = rawLumBilinear(x, fy - 3.5), d3 = rawLumBilinear(x, fy + 3.5);
+                    const l2 = rawLumBilinear(x - 2.0, fy), r2 = rawLumBilinear(x + 2.0, fy);
+                    const blur = 0.35 * (u3 + d3) + 0.15 * (l2 + r2);
+                    sharpArr[y * cw + x] = Math.max(0, c + 1.45 * (c - blur));
                 }
             }
 
-            // 3. Parse Bottom 3-Line Region: First Name, Last Name, 6-Digit Student ID
-            const nameLines = [];
-            for (const rawLine of bottomLines) {
-                const trimmed = rawLine.trim();
-                if (!trimmed) continue;
-
-                // Check for 6-digit Student ID (or 5-8 digits)
-                const compactDigits = trimmed
-                    .replace(/[Oo]/g, '0')
-                    .replace(/[Il|!]/g, '1')
-                    .replace(/\s+/g, '');
-                const idMatch = compactDigits.match(/\b(\d{6})\b/) || trimmed.match(/\b(\d{5,8})\b/);
-                if (idMatch && !result.studentId) {
-                    result.studentId = idMatch[1];
-                    result.score += 4;
-                    continue;
+            const idSharpSlice = new Uint8ClampedArray(cw * idH2);
+            for (let y = 0; y < idH2; y++) {
+                const rx0 = Math.round(cw * 0.21), rx1 = Math.round(cw * 0.82);
+                const rowVals = [];
+                for (let x = rx0; x < rx1; x++) rowVals.push(sharpArr[y * cw + x]);
+                rowVals.sort((a, b) => a - b);
+                const bg = rowVals[Math.floor(rowVals.length * 0.30)] || 40;
+                const peak = rowVals[Math.floor(rowVals.length * 0.95)] || (bg + 60);
+                const span = Math.max(30, peak - bg);
+                for (let x = 0; x < cw; x++) {
+                    if (x < rx0 || x >= rx1 || y < 5) {
+                        idSharpSlice[y * cw + x] = 255;
+                        continue;
+                    }
+                    const norm = Math.max(0, Math.min(1, (sharpArr[y * cw + x] - (bg + span * 0.42)) / (span * 0.48)));
+                    idSharpSlice[y * cw + x] = Math.round(255 * (1 - Math.pow(norm, 1.2)));
                 }
+            }
+            clearThinHorizontalBorders(idSharpSlice, cw, idH2, true);
 
-                const validName = isValidNameCandidate(trimmed);
-                if (validName) {
-                    nameLines.push(validName);
+            function deblurFiveNotches(sliceGray, sw, sh, yStartCheck, mapToCardY) {
+                const vis = new Uint8Array(sw * sh);
+                for (let y = yStartCheck; y < sh; y++) {
+                    for (let x = 0; x < sw; x++) {
+                        const idx = y * sw + x;
+                        if (!vis[idx] && sliceGray[idx] < 165) {
+                            const q = [idx];
+                            vis[idx] = 1;
+                            let minX = x, maxX = x, minY = y, maxY = y;
+                            while (q.length) {
+                                const cur = q.pop();
+                                const cy = Math.floor(cur / sw), cx = cur % sw;
+                                if (cx < minX) minX = cx;
+                                if (cx > maxX) maxX = cx;
+                                if (cy < minY) minY = cy;
+                                if (cy > maxY) maxY = cy;
+                                for (const [nx, ny] of [[cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1]]) {
+                                    if (nx >= 0 && nx < sw && ny >= yStartCheck && ny < sh) {
+                                        const ni = ny * sw + nx;
+                                        if (!vis[ni] && sliceGray[ni] < 165) {
+                                            vis[ni] = 1;
+                                            q.push(ni);
+                                        }
+                                    }
+                                }
+                            }
+                            const dw = maxX - minX + 1, dh = maxY - minY + 1;
+                            if (dh >= 24 && dh <= 52 && dw >= 10 && dw <= 32) {
+                                const meanInk = (xA, xB, yA, yB) => {
+                                    let s = 0, n = 0;
+                                    for (let py = Math.round(minY + yA * dh); py <= Math.round(minY + yB * dh); py++) {
+                                        for (let px = Math.round(minX + xA * dw); px <= Math.round(minX + xB * dw); px++) {
+                                            if (px >= 0 && px < sw && py >= 0 && py < sh) {
+                                                s += rawLumBilinear(px, mapToCardY(px, py));
+                                                n++;
+                                            }
+                                        }
+                                    }
+                                    return n ? s / n : 0;
+                                };
+                                const ul = meanInk(0.05, 0.38, 0.16, 0.40);
+                                const ur = meanInk(0.65, 0.96, 0.20, 0.38);
+                                const ll = meanInk(0.05, 0.38, 0.55, 0.74);
+                                const lr = meanInk(0.62, 0.95, 0.55, 0.78);
+                                const botLeft = meanInk(0.08, 0.48, 0.78, 0.98);
+                                if (ul - ur > 13 && lr > ll + 4 && botLeft > ur + 2) {
+                                    for (let py = Math.round(minY + 0.22 * dh); py <= Math.round(minY + 0.36 * dh); py++) {
+                                        for (let px = Math.round(minX + 0.66 * dw); px <= maxX; px++) {
+                                            sliceGray[py * sw + px] = 255;
+                                        }
+                                    }
+                                    for (let py = Math.round(minY + 0.55 * dh); py <= Math.round(minY + 0.68 * dh); py++) {
+                                        for (let px = minX; px <= Math.round(minX + 0.28 * dw); px++) {
+                                            sliceGray[py * sw + px] = 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            if (nameLines.length >= 2) {
-                result.firstName = toTitleCaseName(nameLines[0]);
-                result.lastName = toTitleCaseName(nameLines[1]);
-                result.score += 4;
-            } else if (nameLines.length === 1) {
-                const parts = nameLines[0].split(' ').filter(Boolean);
-                if (parts.length >= 2) {
-                    result.firstName = toTitleCaseName(parts[0]);
-                    result.lastName = toTitleCaseName(parts.slice(1).join(' '));
-                    result.score += 3;
-                } else {
-                    result.firstName = toTitleCaseName(parts[0]);
-                    result.score += 1;
+            deblurFiveNotches(botGray, cw, ch, idY0, (px, py) => py);
+            deblurFiveNotches(idSharpSlice, cw, idH2, 0, (px, py) => (idY0 + 2 + py) + bestSlope * (px - cw * 0.5));
+
+            // 2. Year crop (top-right 26-27)
+            const yx0 = Math.round(W * 0.60), yx1 = Math.round(W * 0.98);
+            const yy0 = Math.round(H * 0.032), yy1 = Math.round(H * 0.150);
+            const yw = yx1 - yx0, yh = yy1 - yy0;
+            const yScore = new Float32Array(yw * yh);
+            const allScores = [];
+            for (let y = 0; y < yh; y++) {
+                for (let x = 0; x < yw; x++) {
+                    const i = ((yy0 + y) * W + (yx0 + x)) * 4;
+                    const r = rectImg.rgba[i], g = rectImg.rgba[i + 1], b = rectImg.rgba[i + 2];
+                    const yel = (r > 100 && g > 90 && Math.abs(r - g) < 50)
+                        ? Math.max(0, 0.5 * (r + g) - b - 0.7 * Math.max(0, r - g - 18))
+                        : 0;
+                    yScore[y * yw + x] = yel;
+                    allScores.push(yel);
+                }
+            }
+            allScores.sort((a, b) => a - b);
+            const yBg = allScores[Math.floor(allScores.length * 0.50)] || 0;
+            const yPeak = allScores[Math.floor(allScores.length * 0.97)] || 60;
+            const ySpan = Math.max(25, yPeak - yBg);
+            const yearGray = new Uint8ClampedArray(yw * yh);
+            for (let k = 0; k < yw * yh; k++) {
+                const norm = Math.max(0, Math.min(1, (yScore[k] - (yBg + ySpan * 0.25)) / (ySpan * 0.60)));
+                yearGray[k] = Math.round(255 * (1 - norm));
+            }
+
+            // 3. Direct geometric Grade detection inside Yellow Grade Box
+            const gx0 = Math.round(W * 0.66), gx1 = Math.round(W * 0.98);
+            const gy0 = Math.round(H * 0.125), gy1 = Math.round(H * 0.265);
+            const gw = gx1 - gx0, gh = gy1 - gy0;
+            const yelMask = new Uint8Array(gw * gh);
+            const yellowLums = [];
+            for (let y = 0; y < gh; y++) {
+                for (let x = 0; x < gw; x++) {
+                    const i = ((gy0 + y) * W + (gx0 + x)) * 4;
+                    const r = rectImg.rgba[i], g = rectImg.rgba[i + 1], b = rectImg.rgba[i + 2];
+                    if (r > 125 && g > 115 && (r - b) > 32 && (g - b) > 22 && Math.abs(r - g) < 52) {
+                        yelMask[y * gw + x] = 1;
+                        yellowLums.push(0.35 * r + 0.55 * g + 0.10 * b);
+                    }
+                }
+            }
+            yellowLums.sort((a, b) => a - b);
+            const medYelLum = yellowLums[Math.floor(yellowLums.length * 0.5)] || 180;
+            const gradeGray = new Uint8ClampedArray(gw * gh);
+            gradeGray.fill(255);
+            for (let y = 2; y < gh - 2; y++) {
+                for (let x = 2; x < gw - 2; x++) {
+                    let cntL = 0, cntR = 0, cntU = 0, cntD = 0;
+                    for (let lx = 0; lx < x; lx++) if (yelMask[y * gw + lx]) cntL++;
+                    for (let rx = x + 1; rx < gw; rx++) if (yelMask[y * gw + rx]) cntR++;
+                    for (let uy = 0; uy < y; uy++) if (yelMask[uy * gw + x]) cntU++;
+                    for (let dy = y + 1; dy < gh; dy++) if (yelMask[dy * gw + x]) cntD++;
+                    if (cntL >= 4 && cntR >= 4 && cntU >= 3 && cntD >= 3) {
+                        const i = ((gy0 + y) * W + (gx0 + x)) * 4;
+                        const lum = 0.35 * rectImg.rgba[i] + 0.55 * rectImg.rgba[i + 1] + 0.10 * rectImg.rgba[i + 2];
+                        const norm = Math.max(0, Math.min(1, (lum - (medYelLum * 0.42)) / (medYelLum * 0.36)));
+                        gradeGray[y * gw + x] = Math.round(255 * norm);
+                    }
+                }
+            }
+            const directGrade = classifyGradeFromComponents(gradeGray, gw, gh) || '11';
+
+            const pad = 32;
+            const outW = Math.max(cw, yw) + pad * 2;
+            const outH = ch + idH2 + yh + pad * 4;
+            const out = new Uint8ClampedArray(outW * outH * 4);
+            out.fill(255);
+
+            function blit(gray, w, h, dx, dy) {
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const v = gray[y * w + x];
+                        const dst = ((dy + y) * outW + (dx + x)) * 4;
+                        out[dst] = v; out[dst + 1] = v; out[dst + 2] = v;
+                    }
                 }
             }
 
-            return result;
+            blit(botGray, cw, ch, pad, pad);
+            blit(idSharpSlice, cw, idH2, pad, pad * 2 + ch);
+            blit(yearGray, yw, yh, pad, pad * 3 + ch + idH2);
+
+            return { width: outW, height: outH, rgba: out, directGrade, portraitBounds: pb };
+        }
+
+        function parseExtractedCardFields(ocrText, directGrade) {
+            const rawLines = (ocrText || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+            // 1. School Year: match 2X-2Y (including OCR variants of '7' like ')' or ']' or '1' after '26-2')
+            let schoolYear = '';
+            const yearMatch = (ocrText || '').match(/\b(2\d)\s*[-–—.~]\s*(2[\d\)\]|lI])\b/);
+            if (yearMatch) {
+                const y1 = parseInt(yearMatch[1], 10);
+                const y2Str = yearMatch[2].replace(/[\)\]]/g, '7').replace(/[lI|]/g, '1');
+                let y2 = parseInt(y2Str, 10);
+                if (isNaN(y2) || y2 !== y1 + 1) y2 = y1 + 1;
+                schoolYear = `${y1}-${y2}`;
+            }
+
+            // 2. Student ID: collect 6-digit candidates
+            const sixDigitMatches = [...(ocrText || '').matchAll(/(?<!\d)(\d{6})(?!\d)/g)].map(m => m[1]);
+            let studentId = '';
+            if (sixDigitMatches.length === 1) {
+                studentId = sixDigitMatches[0];
+            } else if (sixDigitMatches.length > 1) {
+                const counts = {};
+                for (const c of sixDigitMatches) counts[c] = (counts[c] || 0) + 1;
+                let best = sixDigitMatches[sixDigitMatches.length - 1];
+                let bestScore = -Infinity;
+                sixDigitMatches.forEach((cand, idx) => {
+                    let s = counts[cand] * 10 + idx * 2;
+                    if (cand[2] === '9') s += 5;
+                    if (cand[3] === '5') s += 5;
+                    if (s > bestScore) {
+                        bestScore = s;
+                        best = cand;
+                    }
+                });
+                studentId = best;
+            }
+
+            // 3. First Name & Last Name from the top alphabetic lines
+            const nameCandidates = [];
+            for (const line of rawLines) {
+                if (/\d{3,}/.test(line) || /2\d\s*[-–—]\s*2/.test(line)) continue;
+                const tokens = line.replace(/[^A-Za-z0-9|!]/g, ' ').trim().split(/\s+/).filter(Boolean);
+                let bestTok = '';
+                for (const tok of tokens) {
+                    const alphaCount = (tok.match(/[A-Za-z]/g) || []).length;
+                    if (alphaCount >= 4 && tok.length > bestTok.length) {
+                        bestTok = tok;
+                    }
+                }
+                if (bestTok) {
+                    let cleaned = bestTok
+                        .replace(/([a-z])[|!1I]+$/g, (m, p1) => p1 + 'l'.repeat(m.length - 1))
+                        .replace(/[^A-Za-z]/g, '');
+                    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
+                    cleaned = cleaned.replace(/h(iil|ili|hil|il)$/i, 'hill');
+                    cleaned = cleaned.replace(/ttti?ew$/i, 'tthew');
+                    if (cleaned.length >= 4) {
+                        nameCandidates.push(cleaned);
+                    }
+                }
+                if (nameCandidates.length >= 2) break;
+            }
+
+            return {
+                firstName: nameCandidates[0] || '',
+                lastName: nameCandidates[1] || '',
+                studentId,
+                grade: directGrade || '11',
+                schoolYear: schoolYear || '26-27'
+            };
         }
 
         async function getTesseractWorker() {
             if (typeof window.Tesseract === 'undefined') return null;
             if (!tesseractWorkerPromise) {
-                tesseractWorkerPromise = window.Tesseract.createWorker('eng');
+                tesseractWorkerPromise = (async () => {
+                    const worker = await window.Tesseract.createWorker('eng');
+                    await worker.setParameters({
+                        tessedit_pageseg_mode: '6'
+                    });
+                    return worker;
+                })();
             }
             return tesseractWorkerPromise;
         }
 
-        /**
-         * Also checks native BarcodeDetector API (if supported on device) on the vertical barcode.
-         */
-        async function tryDetectBarcodeId(img) {
+        async function tryDetectBarcodeId(imgOrCanvas) {
             if (typeof window.BarcodeDetector === 'undefined') return '';
             try {
                 const detector = new window.BarcodeDetector({ formats: ['code_39', 'code_128'] });
-                // Try upright and 90-degree rotated (for the vertical Code 39 barcode on the right side of the card)
-                const directHits = await detector.detect(img);
+                const directHits = await detector.detect(imgOrCanvas);
                 if (directHits && directHits.length > 0 && directHits[0].rawValue) {
                     return directHits[0].rawValue.replace(/\*/g, '').trim();
                 }
 
                 const rotCanvas = document.createElement('canvas');
-                rotCanvas.width = img.height;
-                rotCanvas.height = img.width;
+                rotCanvas.width = imgOrCanvas.height;
+                rotCanvas.height = imgOrCanvas.width;
                 const rCtx = rotCanvas.getContext('2d');
                 rCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
                 rCtx.rotate(-Math.PI / 2);
-                rCtx.drawImage(img, -img.width / 2, -img.height / 2);
+                rCtx.drawImage(imgOrCanvas, -imgOrCanvas.width / 2, -imgOrCanvas.height / 2);
 
                 const rotHits = await detector.detect(rotCanvas);
                 if (rotHits && rotHits.length > 0 && rotHits[0].rawValue) {
@@ -1663,226 +2141,141 @@
             return '';
         }
 
+        function updateDetectedPreviewBar(rectCanvas, pb, pose) {
+            const bar = document.getElementById('detectedCardPreviewBar');
+            const badge = document.getElementById('detectedPoseBadge');
+            const thumb = document.getElementById('detectedPortraitThumbCanvas');
+            const subEl = document.getElementById('detectedCardSummarySub');
+
+            if (thumb && rectCanvas) {
+                const tCtx = thumb.getContext('2d');
+                tCtx.clearRect(0, 0, thumb.width, thumb.height);
+                const sx = rectCanvas.width * pb.leftU;
+                const sy = rectCanvas.height * pb.topV;
+                const sw = rectCanvas.width * (pb.rightU - pb.leftU);
+                const sh = rectCanvas.height * (pb.botV - pb.topV);
+                tCtx.drawImage(rectCanvas, sx, sy, sw, sh, 0, 0, thumb.width, thumb.height);
+            }
+
+            if (bar) {
+                bar.classList.remove('hidden');
+                bar.classList.add('flex');
+            }
+            if (badge && pose) {
+                const roundedDeg = Math.round(pose.angleDeg) % 360;
+                badge.textContent = (roundedDeg <= 6 || roundedDeg >= 354)
+                    ? 'Aligned'
+                    : `Rotated ${roundedDeg}°`;
+                badge.classList.remove('hidden');
+            }
+            if (subEl && pose) {
+                const roundedDeg = Math.round(pose.angleDeg) % 360;
+                subEl.textContent = (roundedDeg <= 6 || roundedDeg >= 354)
+                    ? 'Portrait locked & cropped inside yellow frame'
+                    : `Auto-deskewed ${roundedDeg}° & cropped portrait`;
+            }
+        }
+
         /**
-         * Extracts First Name, Last Name, 6-Digit Student ID, Grade, and School Year
-         * from the uploaded ID card image and populates the cardholder details.
+         * Detects the physical ID card pose (including 90°/180°/270°/tilted shots),
+         * bilinearly rectifies the card upright, locks onto the yellow portrait frame,
+         * and extracts First Name, Last Name, 6-Digit Student ID, Grade, and School Year.
          */
-        async function extractCardDetailsFromImage(img) {
-            if (!img) return;
+        async function extractCardDetailsFromImage(rawImg) {
+            const sourceImg = rawImg || state.rawUploadedImage || state.uploadedImage;
+            if (!sourceImg) return;
 
             const ocrStatusLabel = document.getElementById('ocrStatusLabel');
             if (ocrStatusLabel) {
-                ocrStatusLabel.textContent = 'Scanning text from uploaded picture...';
+                ocrStatusLabel.textContent = 'Aligning card, cropping portrait & reading text...';
             }
-            showStatusToast('Scanning text from ID photo...', true);
+            showStatusToast('Aligning ID card & scanning text...', true);
 
             try {
-                const candidates = detectCandidateCardRects(img);
+                // Allow UI toast to paint before running synchronous pixel pose search
+                await new Promise(resolve => setTimeout(resolve, 20));
 
-                // Build a single composite OCR sheet stacking each candidate's preprocessed regions
-                const bandSpecs = [];
-                const sheetW = 640;
-                let currentY = 0;
+                const imgObj = imageToRgbaObj(sourceImg);
+                const pose = detectCardPose(imgObj);
+                const rectImg = rectifyCard(imgObj, pose, 638, 1012);
+                const rectCanvas = rgbaObjToCanvas(rectImg);
+                const pb = findPortraitBounds(rectImg);
 
-                for (const cand of candidates) {
-                    // Top-Right School Year crop (yellow text on dark navy -> black on white)
-                    const yearCrop = createInvertedLightTextCrop(
-                        img,
-                        {
-                            x: cand.x + cand.w * 0.65,
-                            y: cand.y + cand.h * 0.03,
-                            w: cand.w * 0.32,
-                            h: cand.h * 0.10
-                        },
-                        260,
-                        true,
-                        'YEAR'
-                    );
+                state.lastDetectedPose = pose;
+                state.rectifiedCardCanvas = rectCanvas;
+                state.uploadedImage = rectCanvas;
+                state.dissectedPortrait = {
+                    x: pb.leftU,
+                    y: pb.topV,
+                    w: Math.max(0.20, pb.rightU - pb.leftU),
+                    h: Math.max(0.20, pb.botV - pb.topV)
+                };
+                state.photoMode = 'extract_from_id';
+                syncPhotoModeButtons();
+                updateDetectedPreviewBar(rectCanvas, pb, pose);
+                renderPass();
 
-                    // Top-Right Grade Box crop (dark text inside yellow box -> black on white)
-                    const gradeCrop = createIsolatedGradeBoxCrop(img, cand);
+                const cleanSheet = buildCleanSheet(rectImg);
+                const sheetCanvas = rgbaObjToCanvas(cleanSheet);
 
-                    // Bottom 3-Line Name + Student ID crop (white text on dark navy -> black on white)
-                    const bottomCrop = createInvertedLightTextCrop(
-                        img,
-                        {
-                            x: cand.x + cand.w * 0.16,
-                            y: cand.y + cand.h * 0.77,
-                            w: cand.w * 0.74,
-                            h: cand.h * 0.225
-                        },
-                        540,
-                        false,
-                        ''
-                    );
-
-                    const topBandH = Math.max(yearCrop.height, gradeCrop.height) + 16;
-                    const bottomBandH = bottomCrop.height + 20;
-
-                    bandSpecs.push({
-                        cand,
-                        yearCrop,
-                        gradeCrop,
-                        bottomCrop,
-                        topY0: currentY,
-                        topY1: currentY + topBandH + bottomBandH * 0.05,
-                        bottomY0: currentY + topBandH,
-                        bottomY1: currentY + topBandH + bottomBandH
-                    });
-
-                    currentY += topBandH + bottomBandH + 24;
-                }
-
-                const compositeCanvas = document.createElement('canvas');
-                compositeCanvas.width = sheetW;
-                compositeCanvas.height = currentY;
-                const compCtx = compositeCanvas.getContext('2d');
-                compCtx.fillStyle = '#ffffff';
-                compCtx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-
-                for (const spec of bandSpecs) {
-                    compCtx.drawImage(spec.yearCrop, 10, spec.topY0 + 8);
-                    compCtx.drawImage(spec.gradeCrop, 10, spec.topY0 + 8 + spec.yearCrop.height - 10);
-                    spec.topY1 = spec.topY0 + spec.yearCrop.height + spec.gradeCrop.height;
-                    spec.bottomY0 = spec.topY1;
-                    compCtx.drawImage(spec.bottomCrop, 10, spec.bottomY0);
-                    spec.bottomY1 = spec.bottomY0 + spec.bottomCrop.height + 16;
-                }
-
-                // Adjust total height if needed
-                const finalTotalH = bandSpecs[bandSpecs.length - 1].bottomY1 + 20;
-                if (finalTotalH > compositeCanvas.height) {
-                    const resized = document.createElement('canvas');
-                    resized.width = sheetW;
-                    resized.height = finalTotalH;
-                    const rCtx = resized.getContext('2d');
-                    rCtx.fillStyle = '#ffffff';
-                    rCtx.fillRect(0, 0, resized.width, resized.height);
-                    let yCursor = 0;
-                    for (const spec of bandSpecs) {
-                        spec.topY0 = yCursor;
-                        rCtx.drawImage(spec.yearCrop, 10, yCursor);
-                        yCursor += spec.yearCrop.height + 6;
-                        rCtx.drawImage(spec.gradeCrop, 10, yCursor);
-                        yCursor += spec.gradeCrop.height + 10;
-                        spec.topY1 = yCursor;
-                        spec.bottomY0 = yCursor;
-                        rCtx.drawImage(spec.bottomCrop, 10, yCursor);
-                        yCursor += spec.bottomCrop.height + 24;
-                        spec.bottomY1 = yCursor;
-                    }
-                    compositeCanvas.height = finalTotalH;
-                    compCtx.drawImage(resized, 0, 0);
-                }
-
-                // Run BarcodeDetector and Tesseract OCR in parallel
                 const [barcodeId, worker] = await Promise.all([
-                    tryDetectBarcodeId(img),
+                    tryDetectBarcodeId(rectCanvas),
                     getTesseractWorker()
                 ]);
 
-                let bestParsed = {
-                    firstName: '',
-                    lastName: '',
-                    studentId: barcodeId || '',
-                    grade: '',
-                    schoolYear: '',
-                    score: 0,
-                    matchedCand: null
-                };
-
+                let ocrText = '';
                 if (worker) {
-                    const { data } = await worker.recognize(compositeCanvas);
-                    const lines = data.lines || [];
-
-                    for (const spec of bandSpecs) {
-                        const topLines = [];
-                        const bottomLines = [];
-                        for (const line of lines) {
-                            const midY = (line.bbox.y0 + line.bbox.y1) / 2;
-                            if (midY >= spec.topY0 && midY <= spec.topY1) {
-                                topLines.push(line.text || '');
-                            } else if (midY > spec.bottomY0 && midY <= spec.bottomY1) {
-                                bottomLines.push(line.text || '');
-                            }
-                        }
-
-                        const parsed = parseCandidateBandLines(topLines.join('\n'), bottomLines);
-                        if (parsed.score > bestParsed.score) {
-                            bestParsed = {
-                                ...parsed,
-                                matchedCand: spec.cand
-                            };
-                        }
-                        // Merge any missing fields discovered in other candidate bands
-                        if (!bestParsed.schoolYear && parsed.schoolYear) bestParsed.schoolYear = parsed.schoolYear;
-                        if (!bestParsed.grade && parsed.grade) bestParsed.grade = parsed.grade;
-                        if (!bestParsed.studentId && parsed.studentId) bestParsed.studentId = parsed.studentId;
-                        if (!bestParsed.firstName && parsed.firstName) bestParsed.firstName = parsed.firstName;
-                        if (!bestParsed.lastName && parsed.lastName) bestParsed.lastName = parsed.lastName;
-                    }
+                    await worker.setParameters({ tessedit_pageseg_mode: '6' });
+                    const { data } = await worker.recognize(sheetCanvas);
+                    ocrText = (data && data.text) ? data.text : '';
                 }
 
+                const parsed = parseExtractedCardFields(ocrText, cleanSheet.directGrade);
                 if (barcodeId && /^\d{5,8}$/.test(barcodeId)) {
-                    bestParsed.studentId = barcodeId;
+                    parsed.studentId = barcodeId;
                 }
 
-                // Apply extracted fields to state and inputs
                 let fieldsFilled = 0;
-                if (bestParsed.firstName) {
-                    state.firstName = bestParsed.firstName;
+                if (parsed.firstName) {
+                    state.firstName = parsed.firstName;
                     fieldsFilled++;
                 }
-                if (bestParsed.lastName) {
-                    state.lastName = bestParsed.lastName;
+                if (parsed.lastName) {
+                    state.lastName = parsed.lastName;
                     fieldsFilled++;
                 }
-                if (bestParsed.studentId) {
-                    state.studentId = bestParsed.studentId;
+                if (parsed.studentId) {
+                    state.studentId = parsed.studentId;
                     fieldsFilled++;
                 }
-                if (bestParsed.grade) {
-                    state.grade = bestParsed.grade;
+                if (parsed.grade) {
+                    state.grade = parsed.grade;
                     fieldsFilled++;
                 }
-                if (bestParsed.schoolYear) {
-                    state.schoolYear = bestParsed.schoolYear;
+                if (parsed.schoolYear) {
+                    state.schoolYear = parsed.schoolYear;
                     fieldsFilled++;
-                }
-
-                // Update portrait crop coordinates if a card was matched
-                if (bestParsed.matchedCand) {
-                    const mc = bestParsed.matchedCand;
-                    if (mc.source === 'dissected') {
-                        state.dissectedPortrait = { x: 0.2810, y: 0.5175, w: 0.2800, h: 0.2705 };
-                        state.photoMode = 'extract_from_id';
-                    } else if (mc.source === 'detected' || mc.source === 'full') {
-                        state.dissectedPortrait = {
-                            x: mc.x + mc.w * 0.254,
-                            y: mc.y + mc.h * 0.377,
-                            w: mc.w * 0.493,
-                            h: mc.h * 0.401
-                        };
-                        state.photoMode = 'extract_from_id';
-                    }
-                    syncPhotoModeButtons();
                 }
 
                 syncInputsFromState();
                 updateBarcodes();
 
+                const summaryTitle = document.getElementById('detectedCardSummaryTitle');
                 if (fieldsFilled > 0) {
                     const summaryName = `${state.firstName} ${state.lastName}`.trim();
                     const summaryId = state.studentId ? `#${state.studentId}` : '';
                     if (ocrStatusLabel) {
                         ocrStatusLabel.textContent = `Auto-filled: ${summaryName || 'Student'} ${summaryId}`.trim();
                     }
-                    showStatusToast(`Auto-filled details: ${summaryName} ${summaryId}`.trim(), false, 3000);
+                    if (summaryTitle) {
+                        summaryTitle.textContent = `${summaryName || 'Student'} ${summaryId} • Grade ${state.grade} (${state.schoolYear})`.trim();
+                    }
+                    showStatusToast(`Scanned: ${summaryName} ${summaryId}`.trim(), false, 3000);
                 } else {
                     if (ocrStatusLabel) {
-                        ocrStatusLabel.textContent = 'Photo loaded • Enter details below if needed';
+                        ocrStatusLabel.textContent = 'Portrait aligned • Enter details below if needed';
                     }
-                    showStatusToast('Photo loaded!', false, 2000);
+                    showStatusToast('ID portrait aligned!', false, 2200);
                 }
             } catch (err) {
                 console.warn('OCR extraction warning:', err);
@@ -1893,11 +2286,34 @@
             }
         }
 
+        async function processLoadedImageElement(finalImg) {
+            if (!finalImg) return;
+
+            state.rawUploadedImage = finalImg;
+            state.uploadedImage = finalImg;
+            state.zoom = 1.0;
+            state.rotation = 0;
+            state.panX = 0;
+            state.panY = 0;
+            syncSlidersUI();
+
+            document.getElementById('uploadBtnText').textContent = 'Change Photo';
+            document.getElementById('primaryScanBtnText').textContent = 'Re-Scan ID Card with Camera';
+            document.getElementById('rescanPhotoTextBtn').classList.remove('hidden');
+
+            renderPass();
+            await extractCardDetailsFromImage(finalImg);
+        }
+
         async function handleUploadedPhotoFile(file) {
             if (!file) return;
 
+            if (cameraScannerModal && cameraScannerModal.open) {
+                closeCameraScannerModal();
+            }
+
             const isHeic = await isHeicOrHeifFile(file);
-            showStatusToast(isHeic ? 'Converting HEIC photo...' : 'Loading photo...', true);
+            showStatusToast(isHeic ? 'Converting HEIC photo...' : 'Loading ID photo...', true);
 
             let decodedImg = null;
 
@@ -1940,22 +2356,130 @@
 
             const normalizedDataUrl = normalizeImageForStorage(decodedImg, 1600);
             const finalImg = await loadImageElement(normalizedDataUrl);
-
-            state.uploadedImage = finalImg;
-            state.zoom = 1.0;
-            state.rotation = 0;
-            state.panX = 0;
-            state.panY = 0;
-            syncSlidersUI();
-
-            document.getElementById('uploadBtnText').textContent = 'Change Photo';
-            document.getElementById('rescanPhotoTextBtn').classList.remove('hidden');
-
-            renderPass();
-
-            // Automatically scan and fill cardholder details from the uploaded picture
-            await extractCardDetailsFromImage(finalImg);
+            await processLoadedImageElement(finalImg);
         }
+
+        // ============================================================================
+        // IN-APP LIVE IPHONE CAMERA ID SCANNER MODAL
+        // ============================================================================
+        const cameraScannerModal = document.getElementById('cameraScannerModal');
+        const liveCameraVideo = document.getElementById('liveCameraVideo');
+        const toggleTorchBtn = document.getElementById('toggleTorchBtn');
+
+        function stopCameraStream() {
+            if (activeCameraStream) {
+                activeCameraStream.getTracks().forEach(track => {
+                    try { track.stop(); } catch (e) {}
+                });
+                activeCameraStream = null;
+            }
+            if (liveCameraVideo) {
+                liveCameraVideo.srcObject = null;
+            }
+            cameraTorchEnabled = false;
+            if (toggleTorchBtn) {
+                toggleTorchBtn.classList.add('hidden');
+                toggleTorchBtn.textContent = 'Flash';
+            }
+        }
+
+        async function openCameraScannerModal() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                document.getElementById('cameraCaptureInput').click();
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: false,
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1440 }
+                    }
+                });
+                activeCameraStream = stream;
+                liveCameraVideo.srcObject = stream;
+                await liveCameraVideo.play().catch(() => {});
+
+                const videoTrack = stream.getVideoTracks()[0];
+                if (videoTrack && typeof videoTrack.getCapabilities === 'function') {
+                    const caps = videoTrack.getCapabilities();
+                    if (caps && caps.torch && toggleTorchBtn) {
+                        toggleTorchBtn.classList.remove('hidden');
+                    }
+                }
+
+                if (typeof cameraScannerModal.showModal === 'function') {
+                    if (!cameraScannerModal.open) cameraScannerModal.showModal();
+                } else {
+                    cameraScannerModal.setAttribute('open', '');
+                }
+                requestScreenWakeLock();
+            } catch (camErr) {
+                document.getElementById('cameraCaptureInput').click();
+            }
+        }
+
+        function closeCameraScannerModal() {
+            stopCameraStream();
+            if (typeof cameraScannerModal.close === 'function' && cameraScannerModal.open) {
+                cameraScannerModal.close();
+            } else {
+                cameraScannerModal.removeAttribute('open');
+            }
+            releaseScreenWakeLock();
+        }
+
+        async function captureFrameFromLiveCamera() {
+            if (!liveCameraVideo || !liveCameraVideo.videoWidth || !liveCameraVideo.videoHeight) {
+                document.getElementById('cameraCaptureInput').click();
+                return;
+            }
+
+            const vw = liveCameraVideo.videoWidth;
+            const vh = liveCameraVideo.videoHeight;
+            const maxDim = 1600;
+            const scale = Math.min(1, maxDim / Math.max(vw, vh));
+            const cw = Math.round(vw * scale);
+            const ch = Math.round(vh * scale);
+
+            const snapCanvas = document.createElement('canvas');
+            snapCanvas.width = cw;
+            snapCanvas.height = ch;
+            const sCtx = snapCanvas.getContext('2d');
+            sCtx.drawImage(liveCameraVideo, 0, 0, cw, ch);
+
+            const dataUrl = snapCanvas.toDataURL('image/jpeg', 0.92);
+            closeCameraScannerModal();
+
+            const capturedImg = await loadImageElement(dataUrl);
+            await processLoadedImageElement(capturedImg);
+        }
+
+        if (toggleTorchBtn) {
+            toggleTorchBtn.addEventListener('click', async () => {
+                if (!activeCameraStream) return;
+                const track = activeCameraStream.getVideoTracks()[0];
+                if (!track) return;
+                try {
+                    cameraTorchEnabled = !cameraTorchEnabled;
+                    await track.applyConstraints({ advanced: [{ torch: cameraTorchEnabled }] });
+                    toggleTorchBtn.textContent = cameraTorchEnabled ? 'Flash ON' : 'Flash';
+                } catch (e) {}
+            });
+        }
+
+        document.getElementById('openCameraScannerBtn').addEventListener('click', openCameraScannerModal);
+        document.getElementById('headerCameraBtn').addEventListener('click', openCameraScannerModal);
+        document.getElementById('infoTakePictureBtn').addEventListener('click', openCameraScannerModal);
+        document.getElementById('photoTabCameraBtn').addEventListener('click', openCameraScannerModal);
+        document.getElementById('closeCameraScannerModalBtn').addEventListener('click', closeCameraScannerModal);
+        document.getElementById('captureCameraFrameBtn').addEventListener('click', captureFrameFromLiveCamera);
+        cameraScannerModal.addEventListener('close', () => {
+            stopCameraStream();
+            releaseScreenWakeLock();
+        });
 
         // Tab Switching Logic
         const tabInfoBtn = document.getElementById('tabInfoBtn');
@@ -2010,10 +2534,10 @@
         });
 
         document.getElementById('rescanPhotoTextBtn').addEventListener('click', () => {
-            if (state.uploadedImage) {
-                extractCardDetailsFromImage(state.uploadedImage);
+            if (state.rawUploadedImage || state.uploadedImage) {
+                extractCardDetailsFromImage(state.rawUploadedImage || state.uploadedImage);
             } else {
-                document.getElementById('photoUploadInput').click();
+                openCameraScannerModal();
             }
         });
 
@@ -2026,10 +2550,17 @@
             syncInputsFromState();
             const ocrStatusLabel = document.getElementById('ocrStatusLabel');
             if (ocrStatusLabel) {
-                ocrStatusLabel.textContent = 'Reads name, ID #, grade & year from picture';
+                ocrStatusLabel.textContent = 'Auto-rotates card, crops portrait & reads text';
             }
             updateBarcodes();
             showStatusToast('Cleared cardholder details', false, 1500);
+        });
+
+        document.getElementById('cameraCaptureInput').addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            handleUploadedPhotoFile(file);
+            e.target.value = '';
         });
 
         document.getElementById('photoUploadInput').addEventListener('change', (e) => {
@@ -2095,8 +2626,19 @@
 
         document.getElementById('removePhotoBtn').addEventListener('click', () => {
             state.uploadedImage = null;
-            document.getElementById('uploadBtnText').textContent = 'Upload ID / HEIC';
+            state.rawUploadedImage = null;
+            state.rectifiedCardCanvas = null;
+            state.lastDetectedPose = null;
+            document.getElementById('uploadBtnText').textContent = 'Photos / HEIC';
+            document.getElementById('primaryScanBtnText').textContent = 'Scan ID Card with Camera';
             document.getElementById('rescanPhotoTextBtn').classList.add('hidden');
+            const previewBar = document.getElementById('detectedCardPreviewBar');
+            const badge = document.getElementById('detectedPoseBadge');
+            if (previewBar) {
+                previewBar.classList.add('hidden');
+                previewBar.classList.remove('flex');
+            }
+            if (badge) badge.classList.add('hidden');
             renderPass();
             showStatusToast('Photo removed', false, 1500);
         });
@@ -2160,7 +2702,7 @@
                 const dist = Math.hypot(e.clientX - tapCandidate.clientX, e.clientY - tapCandidate.clientY);
                 if (dist < 8) {
                     if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
-                        document.getElementById('photoUploadInput').click();
+                        openCameraScannerModal();
                     } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
                         openScannerModal();
                     }
@@ -2221,7 +2763,7 @@
                 const dist = changed ? Math.hypot(changed.clientX - tapCandidate.clientX, changed.clientY - tapCandidate.clientY) : 0;
                 if (dist < 12) {
                     if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
-                        document.getElementById('photoUploadInput').click();
+                        openCameraScannerModal();
                     } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
                         openScannerModal();
                     }
