@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WHS ID">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0d131d">
+    <meta name="format-detection" content="telephone=no">
+    <title>Whitney High School • Digital Student ID &amp; Apple Wallet Builder</title>
+    <link id="appleTouchIconLink" rel="apple-touch-icon" href="">
+    <link id="manifestLink" rel="manifest" href="">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JsBarcode for Authentic WHS 1D Barcodes (Code 39 & Code 128) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <!-- heic2any for Cross-Browser iPhone HEIC/HEIF Image Decoding -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <!-- JSZip for Building Official Apple Wallet .pkpass Archives -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <!-- node-forge for Optional In-Browser PKCS#7 .pkpass Cryptographic Signing -->
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d14 78%);
+            color: #f8fafc;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: transparent;
+            padding-left: var(--safe-left);
+            padding-right: var(--safe-right);
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .card-drop-shadow {
+            box-shadow: 0 28px 65px -12px rgba(0, 0, 0, 0.9),
+                        0 0 0 1px rgba(255, 255, 255, 0.14);
+        }
+        .safe-header {
+            padding-top: max(0.75rem, var(--safe-top));
+        }
+        .safe-bottom-bar {
+            padding-bottom: max(0.75rem, var(--safe-bottom));
+        }
+
+        /* Brand-consistent accessible range sliders (touch-friendly on iPhone) */
+        input[type="range"] {
+            --slider-track-size: 0.5rem;
+            --slider-thumb-size: 1.5rem;
+            --slider-track-radius: 999px;
+            --slider-thumb-radius: 50%;
+            --slider-track-color: #1e293b;
+            --slider-fill-color: #f5dc00;
+            --slider-thumb-color: #f5dc00;
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+            border: 0;
+            background: transparent;
+            width: 100%;
+            height: var(--slider-thumb-size);
+            cursor: pointer;
+            touch-action: pan-y;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: var(--slider-track-size);
+            border-radius: var(--slider-track-radius);
+            background: var(--slider-track-color);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            border-radius: var(--slider-thumb-radius);
+            background: var(--slider-thumb-color);
+            border: 2.5px solid #0f172a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+            margin-block-start: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
+        }
+        input[type="range"]::-moz-range-track {
+            height: var(--slider-track-size);
+            border-radius: var(--slider-track-radius);
+            background: var(--slider-track-color);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            border-radius: var(--slider-thumb-radius);
+            background: var(--slider-thumb-color);
+            border: 2.5px solid #0f172a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        }
+        input[type="range"]:focus-visible {
+            outline: 2px solid #f5dc00;
+            outline-offset: 2px;
+            border-radius: 999px;
+        }
+
+        /* Native Top-Layer Dialogs: Prevent Underlying Page from Scrolling on iOS */
+        dialog {
+            overscroll-behavior: contain;
+            max-width: 100vw;
+            max-width: 100dvw;
+            max-height: 100vh;
+            max-height: 100dvh;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: inherit;
+        }
+        dialog:modal {
+            overscroll-behavior: contain;
+        }
+        dialog::backdrop {
+            overflow: hidden;
+            overscroll-behavior: contain;
+            background: rgba(3, 7, 18, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Apple Wallet Pass 3D Flip Card */
+        .wallet-pass-perspective {
+            perspective: 1200px;
+        }
+        .wallet-pass-inner {
+            transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+            transform-style: preserve-3d;
+        }
+        .wallet-pass-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .wallet-pass-face {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .wallet-pass-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class=" flex flex-col selection:bg-[#f5dc00] selection:text-slate-950 pb-24 lg:pb-8">
+
+    <!-- Top Navigation Bar (General WHS Student Portal) -->
+    <header class="w-full border-b border-slate-800/80 bg-[#0d131d]/95 backdrop-blur-md sticky top-0 z-30 safe-header">
+        <div class="max-w-6xl mx-auto px-4 pb-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 shrink-0 rounded-xl bg-[#f5dc00] flex items-center justify-center text-slate-950 font-black shadow-md shadow-yellow-400/10">
+                    <span class="text-xs tracking-tighter font-black">WHS</span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">
+                            Whitney High Digital ID
+                        </h1>
+                        <span class="hidden sm:inline-block text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#f5dc00]/15 text-[#f5dc00] border border-[#f5dc00]/30">
+                            iPhone &amp; Apple Wallet Ready
+                        </span>
+                    </div>
+                    <p class="text-[11px] sm:text-xs text-slate-400 truncate">Supports HEIC Uploads • CR80 + 1D Barcode</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button id="headerWalletBtn" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-black hover:bg-zinc-900 text-white text-xs font-bold border border-zinc-700 shadow transition active:scale-95">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="2" y="4" width="20" height="16" rx="3.5" fill="#18181b" stroke="#52525b" stroke-width="1.5"/>
+                        <rect x="4.5" y="6.5" width="15" height="3.2" rx="1" fill="#38bdf8"/>
+                        <rect x="4.5" y="9" width="15" height="3.2" rx="1" fill="#facc15"/>
+                        <rect x="4.5" y="11.5" width="15" height="6" rx="1.2" fill="#f43f5e"/>
+                        <path d="M9.5 11.5C9.5 12.88 10.62 14 12 14C13.38 14 14.5 12.88 14.5 11.5" stroke="#18181b" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="hidden xs:inline sm:inline">Apple Wallet</span>
+                </button>
+                <button id="fullscreenBtn" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700 transition active:scale-95">
+                    <i data-lucide="maximize-2" class="w-4 h-4 text-[#f5dc00]"></i>
+                    <span class="hidden sm:inline">Fullscreen Scan</span>
+                    <span class="sm:hidden">Scan</span>
+                </button>
+                <button id="downloadTopBtn" type="button" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 text-xs font-extrabold shadow-lg shadow-yellow-400/15 transition active:scale-95">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Save ID</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Status Toast Notification (for HEIC conversion, Wallet export, etc.) -->
+    <div id="statusToast" role="status" aria-live="polite" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-slate-900/95 border border-[#f5dc00]/50 text-white text-xs font-bold shadow-2xl backdrop-blur-md">
+        <span id="statusToastSpinner" class="w-3.5 h-3.5 rounded-full border-2 border-[#f5dc00] border-t-transparent animate-spin"></span>
+        <span id="statusToastText">Processing photo...</span>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-3.5 sm:px-4 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+        <!-- LEFT COLUMN: Live WHS Card + Big Bottom 1D Barcode Preview -->
+        <div class="lg:col-span-5 flex flex-col items-center lg:sticky lg:top-20">
+
+            <!-- View Mode Toggle Bar -->
+            <div class="w-full max-w-[360px] mb-3 grid grid-cols-2 gap-1.5 p-1 bg-slate-900/95 rounded-2xl border border-slate-800">
+                <button id="viewModeBarcodeBtn" type="button" class="py-2 px-3 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-1.5 bg-[#f5dc00] text-slate-950 shadow">
+                    <i data-lucide="barcode" class="w-4 h-4"></i>
+                    <span>ID Card + Big Barcode</span>
+                </button>
+                <button id="viewModeCardOnlyBtn" type="button" class="py-2 px-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+                    <i data-lucide="id-card" class="w-4 h-4"></i>
+                    <span>CR80 Card Only</span>
+                </button>
+            </div>
+
+            <!-- High-DPI Canvas Container -->
+            <div class="w-full max-w-[350px] sm:max-w-[360px] flex flex-col items-center">
+                <div class="relative w-full rounded-[26px] p-1.5 bg-gradient-to-b from-slate-700/50 to-slate-900 card-drop-shadow">
+                    <canvas id="passCanvas" width="882" height="1780" style="aspect-ratio: 882 / 1780;" class="w-full h-auto rounded-[20px] block bg-[#1c232d] cursor-grab active:cursor-grabbing select-none"></canvas>
+                </div>
+
+                <div class="mt-2.5 flex items-center justify-between w-full px-1 text-[11px] text-slate-400">
+                    <span class="flex items-center gap-1"><i data-lucide="hand" class="w-3.5 h-3.5 text-[#f5dc00]"></i> Drag / pinch photo inside frame</span>
+                    <button id="tapBarcodeHintBtn" type="button" class="mono-font text-[#f5dc00] hover:underline font-semibold">Tap barcode to scan</button>
+                </div>
+            </div>
+
+            <!-- Official Add to Apple Wallet Primary Button -->
+            <div class="w-full max-w-[350px] sm:max-w-[360px] mt-3.5 space-y-2.5">
+                <button id="addToAppleWalletBtn" type="button" class="w-full py-3.5 px-5 rounded-2xl bg-black hover:bg-zinc-900 text-white font-bold text-sm border border-zinc-700/90 shadow-xl flex items-center justify-center gap-3 transition active:scale-[0.98]">
+                    <!-- Official-style Apple Wallet Multicolor Pass Stack Icon -->
+                    <svg class="w-6 h-6 shrink-0" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                        <rect x="2" y="4" width="24" height="20" rx="4.5" fill="#1c1c1e" stroke="#52525b" stroke-width="1.2"/>
+                        <rect x="5" y="7" width="18" height="4" rx="1.5" fill="#38bdf8"/>
+                        <rect x="5" y="10" width="18" height="4" rx="1.5" fill="#34d399"/>
+                        <rect x="5" y="13" width="18" height="4" rx="1.5" fill="#facc15"/>
+                        <path d="M5 16.2C5 15.54 5.54 15 6.2 15H21.8C22.46 15 23 15.54 23 16.2V20.5C23 21.33 22.33 22 21.5 22H6.5C5.67 22 5 21.33 5 20.5V16.2Z" fill="#f43f5e"/>
+                        <path d="M11 15C11 16.66 12.34 18 14 18C15.66 18 17 16.66 17 15" fill="#1c1c1e"/>
+                    </svg>
+                    <div class="text-left leading-tight">
+                        <div class="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Add Student Pass to</div>
+                        <div class="text-sm font-extrabold tracking-tight text-white">Apple Wallet</div>
+                    </div>
+                </button>
+
+                <!-- Secondary Actions Under Card -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <label for="photoUploadInput" class="cursor-pointer flex items-center justify-center gap-2 py-3 px-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition active:scale-95 text-center">
+                        <i data-lucide="camera" class="w-4 h-4 text-[#f5dc00] shrink-0"></i>
+                        <span id="uploadBtnText" class="truncate">Upload Photo / HEIC</span>
+                    </label>
+                    <input id="photoUploadInput" type="file" accept="image/*,.heic,.heif,image/heic,image/heif" class="hidden">
+
+                    <button id="downloadMainBtn" type="button" class="flex items-center justify-center gap-2 py-3 px-3.5 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs shadow-lg shadow-yellow-400/15 transition active:scale-95">
+                        <i data-lucide="share" class="w-4 h-4 shrink-0"></i>
+                        <span id="saveShareBtnLabel">Save / Share to iPhone</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: General WHS Student Builder & Controls -->
+        <div class="lg:col-span-7 space-y-5 sm:space-y-6">
+
+            <!-- SECTION 1: Student Information (16px inputs prevent iOS auto-zoom on focus) -->
+            <section class="p-4 sm:p-6 rounded-3xl bg-slate-900/95 border border-slate-800 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="user-round" class="w-5 h-5 text-[#f5dc00]"></i>
+                        <h2 class="font-bold text-base sm:text-lg text-white">1. Whitney High Student Information</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="loadSampleStudentBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
+                            Sample (Matthew • 11)
+                        </button>
+                        <button id="clearFormBtn" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
+                            Clear Fields
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+                    <div>
+                        <label for="firstNameInput" class="block text-xs font-semibold text-slate-400 mb-1.5">First Name (Line 1)</label>
+                        <input id="firstNameInput" type="text" value="Matthew" placeholder="Enter First Name" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white font-bold text-base">
+                    </div>
+
+                    <div>
+                        <label for="lastNameInput" class="block text-xs font-semibold text-slate-400 mb-1.5">Last Name (Line 2)</label>
+                        <input id="lastNameInput" type="text" value="Flowerhill" placeholder="Enter Last Name" autocomplete="family-name" autocapitalize="words" enterkeyhint="next" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white font-bold text-base">
+                    </div>
+
+                    <div>
+                        <label for="studentIdInput" class="block text-xs font-semibold text-slate-400 mb-1.5">6-Digit Student ID (Barcode Number)</label>
+                        <input id="studentIdInput" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" value="449544" placeholder="e.g. 449544" maxlength="12" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white mono-font font-bold text-base">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="gradeSelect" class="block text-xs font-semibold text-slate-400 mb-1.5">Grade Level</label>
+                            <select id="gradeSelect" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white font-bold text-base">
+                                <option value="7">Grade 7</option>
+                                <option value="8">Grade 8</option>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11" selected>Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="schoolYearInput" class="block text-xs font-semibold text-slate-400 mb-1.5">School Year</label>
+                            <input id="schoolYearInput" type="text" enterkeyhint="done" value="26-27" placeholder="26-27" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 focus:border-[#f5dc00] focus:outline-none text-white font-bold text-base">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Student Portrait or Physical ID Photo Upload (Supports .HEIC / .HEIF / JPEG / PNG) -->
+            <section class="p-4 sm:p-6 rounded-3xl bg-slate-900/95 border border-slate-800 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="image-plus" class="w-5 h-5 text-[#f5dc00]"></i>
+                        <h2 class="font-bold text-base sm:text-lg text-white">2. Portrait or ID Photo (HEIC Supported)</h2>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="resetCropBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition active:scale-95">
+                            Reset Alignment
+                        </button>
+                        <button id="removePhotoBtn" type="button" class="px-3 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/70 text-rose-300 text-xs font-semibold border border-rose-800/50 transition active:scale-95">
+                            Remove Photo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dropzone / Upload Trigger for HEIC & iPhone Camera Roll -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-950/90 border border-dashed border-slate-700">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-[#f5dc00]/15 border border-[#f5dc00]/30 flex items-center justify-center text-[#f5dc00] shrink-0">
+                            <i data-lucide="smartphone" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-white">iPhone Camera Roll, Take Photo, or <code class="text-[#f5dc00]">.HEIC</code> File</div>
+                            <div id="photoStatusSubtext" class="text-[11px] text-slate-400">Automatically converts iPhone HEIC/HEIF photos &amp; saves offline</div>
+                        </div>
+                    </div>
+                    <label for="photoUploadInput" class="cursor-pointer shrink-0 px-4 py-2.5 rounded-xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-xs text-center transition active:scale-95">
+                        Choose Photo / HEIC
+                    </label>
+                </div>
+
+                <!-- Photo Handling Mode Selector -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 bg-slate-950 rounded-2xl border border-slate-800">
+                    <button type="button" data-photomode="portrait_fill" class="photo-mode-btn py-2.5 px-3 rounded-xl font-bold text-xs transition bg-[#f5dc00] text-slate-950 shadow">
+                        Regular Portrait / Selfie
+                    </button>
+                    <button type="button" data-photomode="extract_from_id" class="photo-mode-btn py-2.5 px-3 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">
+                        Extract Pic from ID Photo
+                    </button>
+                    <button type="button" data-photomode="full_card_photo" class="photo-mode-btn py-2.5 px-3 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white">
+                        Use Full Cropped ID Photo
+                    </button>
+                </div>
+
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    • <strong>Regular Portrait / Selfie:</strong> Fits any iPhone portrait or selfie (<code class="text-slate-200">.HEIC</code>, <code class="text-slate-200">.JPG</code>, <code class="text-slate-200">.PNG</code>) inside the WHS sky-blue frame.<br>
+                    • <strong>Extract Pic from ID Photo:</strong> Crops just your portrait out of a photo of your physical WHS card on a desk.
+                </p>
+
+                <!-- Fine-tune crop sliders -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="zoomSlider" class="text-slate-400 font-medium">Photo Zoom</label>
+                            <span id="zoomLabel" class="mono-font text-[#f5dc00]">100%</span>
+                        </div>
+                        <input id="zoomSlider" type="range" min="0.5" max="2.8" step="0.01" value="1.0" aria-valuetext="100%">
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="rotateSlider" class="text-slate-400 font-medium">Rotate / Straighten</label>
+                            <span id="rotateLabel" class="mono-font text-[#f5dc00]">0°</span>
+                        </div>
+                        <input id="rotateSlider" type="range" min="-15" max="15" step="0.1" value="0" aria-valuetext="0 degrees">
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="panXSlider" class="text-slate-400 font-medium">Horizontal Pan (X)</label>
+                            <span id="panXLabel" class="mono-font text-slate-300">0 px</span>
+                        </div>
+                        <input id="panXSlider" type="range" min="-350" max="350" step="1" value="0" aria-valuetext="0 pixels">
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="panYSlider" class="text-slate-400 font-medium">Vertical Pan (Y)</label>
+                            <span id="panYLabel" class="mono-font text-slate-300">0 px</span>
+                        </div>
+                        <input id="panYSlider" type="range" min="-350" max="350" step="1" value="0" aria-valuetext="0 pixels">
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Big Bottom 1D Barcode Settings -->
+            <section class="p-4 sm:p-6 rounded-3xl bg-slate-900/95 border border-slate-800 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="barcode" class="w-5 h-5 text-[#f5dc00]"></i>
+                        <h2 class="font-bold text-base sm:text-lg text-white">3. Big Bottom 1D Barcode Settings</h2>
+                    </div>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold">
+                        Matches Physical Card Barcode
+                    </span>
+                </div>
+
+                <!-- Barcode Symbology & Visibility Selector -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <button type="button" data-barcodemode="code39" class="barcode-mode-btn p-3 rounded-2xl border border-[#f5dc00] bg-[#f5dc00]/15 text-white text-left transition">
+                        <div class="font-bold text-xs">Code 39 (Exact WHS Match)</div>
+                        <div class="text-[10px] text-slate-300 mt-0.5">Identical 40-bar card pattern</div>
+                    </button>
+                    <button type="button" data-barcodemode="code128" class="barcode-mode-btn p-3 rounded-2xl border border-slate-800 bg-slate-950 text-slate-300 text-left transition">
+                        <div class="font-bold text-xs">Code 128 (High-Density)</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Compact 1D school barcode</div>
+                    </button>
+                    <button type="button" data-barcodemode="card_only" class="barcode-mode-btn p-3 rounded-2xl border border-slate-800 bg-slate-950 text-slate-300 text-left transition">
+                        <div class="font-bold text-xs">CR80 Card Only</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Hide bottom barcode dock</div>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="barHeightSlider" class="text-slate-400 font-medium">Bottom Barcode Height</label>
+                            <span id="barHeightLabel" class="mono-font text-[#f5dc00]">220 px</span>
+                        </div>
+                        <input id="barHeightSlider" type="range" min="140" max="280" step="10" value="220" aria-valuetext="220 pixels">
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <label for="dockHeightSlider" class="text-slate-400 font-medium">Bottom Dock Height</label>
+                            <span id="dockHeightLabel" class="mono-font text-[#f5dc00]">380 px</span>
+                        </div>
+                        <input id="dockHeightSlider" type="range" min="280" max="480" step="10" value="380" aria-valuetext="380 pixels">
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Sticky iPhone Bottom Quick-Action Bar (Visible on Mobile/iPhone Screens) -->
+    <nav aria-label="iPhone Quick Actions" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0d131d]/95 backdrop-blur-xl border-t border-slate-800 px-3 pt-2.5 safe-bottom-bar">
+        <div class="max-w-md mx-auto grid grid-cols-3 gap-2">
+            <button id="mobileBottomWalletBtn" type="button" class="py-2.5 px-2.5 rounded-xl bg-black text-white font-extrabold text-xs border border-zinc-700 flex items-center justify-center gap-1.5 shadow active:scale-95">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="2" y="4" width="20" height="16" rx="3.5" fill="#18181b" stroke="#52525b" stroke-width="1.5"/>
+                    <rect x="4.5" y="6.5" width="15" height="3.2" rx="1" fill="#38bdf8"/>
+                    <rect x="4.5" y="9" width="15" height="3.2" rx="1" fill="#facc15"/>
+                    <rect x="4.5" y="11.5" width="15" height="6" rx="1.2" fill="#f43f5e"/>
+                </svg>
+                <span class="truncate">Apple Wallet</span>
+            </button>
+
+            <button id="mobileBottomScanBtn" type="button" class="py-2.5 px-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 active:scale-95">
+                <i data-lucide="scan-barcode" class="w-4 h-4 text-[#f5dc00] shrink-0"></i>
+                <span class="truncate">Scan Mode</span>
+            </button>
+
+            <button id="mobileBottomShareBtn" type="button" class="py-2.5 px-2.5 rounded-xl bg-[#f5dc00] text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow active:scale-95">
+                <i data-lucide="share" class="w-4 h-4 shrink-0"></i>
+                <span class="truncate">Save to iPhone</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Native Top-Layer Dialog 1: Fullscreen High-Brightness Scanner Modal -->
+    <dialog id="scannerModal" class="w-full h-full bg-black text-white">
+        <div class="w-full h-full flex flex-col items-center justify-between p-4 select-none" style="padding-top: max(1rem, var(--safe-top)); padding-bottom: max(1rem, var(--safe-bottom));">
+            <div class="w-full max-w-md flex items-center justify-between text-white py-1">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="modalTopLabel" class="text-xs font-bold tracking-wider uppercase text-slate-300">WHS Barcode Scanner Mode</span>
+                </div>
+                <button id="closeScannerModalBtn" type="button" class="px-4 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700">
+                    Done
+                </button>
+            </div>
+
+            <div class="flex-1 w-full flex items-center justify-center overflow-hidden my-2">
+                <img id="fullscreenCardImg" alt="Whitney High Student ID" class="max-h-full max-w-full object-contain rounded-[20px] shadow-2xl">
+            </div>
+
+            <div class="w-full max-w-md grid grid-cols-2 gap-2.5 pb-1">
+                <button id="modalWalletBtn" type="button" class="py-3 rounded-2xl bg-zinc-900 border border-zinc-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95">
+                    <span>Add to Apple Wallet</span>
+                </button>
+                <button id="modalDownloadBtn" type="button" class="py-3 rounded-2xl bg-[#f5dc00] text-slate-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95">
+                    <i data-lucide="share" class="w-4 h-4"></i>
+                    <span>Save / Share ID</span>
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Native Top-Layer Dialog 2: Apple Wallet Pass Sheet & .pkpass Builder -->
+    <dialog id="walletModal" class="w-full h-full">
+        <div id="walletModalBackdropClick" class="w-full h-full flex flex-col items-center justify-end sm:justify-center p-0 sm:p-4 overflow-y-auto">
+            <div class="w-full max-w-md bg-[#12161f] sm:rounded-[32px] rounded-t-[32px] border-t sm:border border-slate-800 shadow-2xl p-4 sm:p-5 space-y-4 max-h-[94dvh] overflow-y-auto" style="padding-bottom: max(1.25rem, var(--safe-bottom));">
+
+                <!-- iOS Sheet Header -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-black border border-zinc-700 flex items-center justify-center">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <rect x="2" y="4" width="20" height="16" rx="3.5" fill="#18181b" stroke="#52525b" stroke-width="1.5"/>
+                                <rect x="4.5" y="6.5" width="15" height="3.2" rx="1" fill="#38bdf8"/>
+                                <rect x="4.5" y="9" width="15" height="3.2" rx="1" fill="#facc15"/>
+                                <rect x="4.5" y="11.5" width="15" height="6" rx="1.2" fill="#f43f5e"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-extrabold text-sm text-white">Apple Wallet Student Pass</h3>
+                            <p class="text-[11px] text-slate-400">Whitney High School • PassKit (<code class="text-[#f5dc00]">.pkpass</code>)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button id="flipWalletPassBtn" type="button" class="px-2.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1" title="Flip Pass">
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                            <span>Back Info</span>
+                        </button>
+                        <button id="closeWalletModalBtn" type="button" class="px-3.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700">
+                            Done
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Apple Wallet Pass Card Preview (Front & Back) -->
+                <div class="wallet-pass-perspective w-full">
+                    <div id="walletPassInner" class="wallet-pass-inner relative w-full">
+
+                        <!-- FRONT OF APPLE WALLET PASS -->
+                        <div class="wallet-pass-face rounded-[22px] bg-[#1c232d] border border-slate-700/90 shadow-2xl overflow-hidden">
+                            <!-- Top Gold Accent Bar -->
+                            <div class="h-2 w-full bg-[#f5dc00]"></div>
+
+                            <!-- Pass Header: Logo + Grade Field -->
+                            <div class="px-4 pt-3.5 pb-2 flex items-center justify-between border-b border-slate-800/80">
+                                <div class="flex items-center gap-2.5">
+                                    <canvas id="walletMiniCrestCanvas" width="72" height="72" class="w-9 h-9 rounded-lg bg-[#141921] border border-[#f5dc00]/40"></canvas>
+                                    <div>
+                                        <div class="text-[10px] font-extrabold tracking-widest uppercase text-[#f5dc00]">WHITNEY HIGH SCHOOL</div>
+                                        <div class="text-xs font-bold text-white">Wildcats Student ID</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#f5dc00]">GRADE</div>
+                                    <div id="walletPreviewGrade" class="text-lg font-black text-white leading-none mt-0.5">11</div>
+                                </div>
+                            </div>
+
+                            <!-- Pass Primary & Thumbnail Row -->
+                            <div class="px-4 py-3.5 flex items-center justify-between gap-3">
+                                <div class="min-w-0 flex-1 space-y-2.5">
+                                    <div>
+                                        <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#f5dc00]">STUDENT NAME</div>
+                                        <div id="walletPreviewName" class="text-xl font-black text-white truncate">Matthew Flowerhill</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#f5dc00]">STUDENT ID</div>
+                                            <div id="walletPreviewId" class="text-sm font-extrabold text-slate-100 mono-font">449544</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] font-extrabold tracking-wider uppercase text-[#f5dc00]">SCHOOL YEAR</div>
+                                            <div id="walletPreviewYear" class="text-sm font-extrabold text-slate-100">2026–2027</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Student Thumbnail Portrait -->
+                                <div class="shrink-0">
+                                    <canvas id="walletThumbnailCanvas" width="180" height="220" class="w-[74px] h-[90px] rounded-xl border-2 border-[#f5dc00] shadow-md bg-[#4aa8d8]"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Pass Bottom Scannable 1D Barcode Box -->
+                            <div class="px-3.5 pb-4 pt-1">
+                                <div class="bg-white rounded-2xl p-3 flex flex-col items-center justify-center shadow-inner border-2 border-[#f5dc00]">
+                                    <img id="walletBarcodePreviewImg" alt="Apple Wallet 1D Barcode" class="w-full h-16 object-fill" style="image-rendering: pixelated;">
+                                    <div id="walletBarcodeAltText" class="mono-font text-xs font-extrabold text-slate-900 tracking-widest mt-1">449544</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BACK OF APPLE WALLET PASS -->
+                        <div class="wallet-pass-face wallet-pass-back absolute inset-0 rounded-[22px] bg-[#161c24] border border-slate-700 p-4 flex flex-col justify-between overflow-y-auto">
+                            <div class="space-y-3 text-xs">
+                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                                    <span class="font-extrabold text-[#f5dc00] uppercase tracking-wider">Pass Back Details</span>
+                                    <span class="mono-font text-[11px] text-slate-400">pass.edu.abcusd.whs</span>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                    <div class="text-[10px] font-bold uppercase text-slate-400">Campus</div>
+                                    <div class="font-bold text-white">Gretchen Whitney High School • ABC Unified</div>
+                                    <div class="text-[11px] text-slate-400">16800 Shoemaker Ave, Cerritos, CA 90703</div>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                    <div class="text-[10px] font-bold uppercase text-slate-400">Barcode Specification</div>
+                                    <div class="text-slate-200">Encodes 6-Digit Student ID in Code 39 (<code class="text-[#f5dc00]">*ID*</code>) &amp; Apple Wallet PassKit 1D Barcode.</div>
+                                </div>
+                                <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1">
+                                    <div class="text-[10px] font-bold uppercase text-slate-400">Launch Straight to Wallet Pass</div>
+                                    <label class="flex items-center justify-between gap-2 pt-1 cursor-pointer">
+                                        <span class="text-white font-semibold">Auto-open pass on iPhone launch</span>
+                                        <input id="autoOpenWalletToggle" type="checkbox" class="w-4 h-4 accent-[#f5dc00] rounded">
+                                    </label>
+                                </div>
+                            </div>
+                            <button id="flipBackToFrontBtn" type="button" class="w-full py-2 rounded-xl bg-slate-800 text-white font-bold text-xs border border-slate-700">
+                                Return to Front of Pass
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Primary Action Buttons in Apple Wallet Sheet -->
+                <div class="space-y-2">
+                    <!-- 1. Direct .pkpass Bundle Download / Add -->
+                    <button id="downloadPkpassBtn" type="button" class="w-full py-3.5 px-4 rounded-2xl bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-yellow-400/15 flex items-center justify-center gap-2 transition active:scale-[0.98]">
+                        <i data-lucide="wallet-cards" class="w-4 h-4"></i>
+                        <span id="downloadPkpassBtnText">Add to Apple Wallet (.pkpass)</span>
+                    </button>
+
+                    <!-- 2. Two Quick iPhone Companion Options -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="openPass2UBtn" type="button" class="py-2.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                            <span>Open in Pass2U App</span>
+                        </button>
+                        <button id="shareWalletImageBtn" type="button" class="py-2.5 px-3 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-white font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 transition active:scale-95">
+                            <i data-lucide="share" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                            <span>Save Pass to Photos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Helpful iPhone Wallet Instructions & Optional Custom Certificate Signer -->
+                <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 text-[11px] text-slate-300 space-y-2">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-[#f5dc00] shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong class="text-white">3 Easy Ways to Use on iPhone:</strong>
+                            <ol class="list-decimal list-inside mt-1 space-y-1 text-slate-400">
+                                <li><strong class="text-slate-200">Apple Wallet (<code class="text-[#f5dc00]">.pkpass</code>):</strong> Tap above to download the <code class="text-slate-200">.pkpass</code> bundle (import via free <em>Pass2U Wallet</em> / <em>Pass4Wallet</em> on iOS, or sign directly with an Apple Pass Type ID certificate below).</li>
+                                <li><strong class="text-slate-200">1-Tap iPhone Home Screen App:</strong> In Safari, tap <strong class="text-white">Share → Add to Home Screen</strong>. Your ID installs as a full-screen offline iPhone app!</li>
+                                <li><strong class="text-slate-200">Save to iPhone Photos / Lock Screen:</strong> Tap <em>Save Pass to Photos</em> to favorite in your Camera Roll.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Optional Apple Developer Pass Type ID PKCS#7 Signer -->
+                    <details class="pt-1 border-t border-slate-800/80">
+                        <summary class="cursor-pointer font-bold text-xs text-[#f5dc00] select-none py-1">
+                            Advanced: Direct Apple Pass Type ID Certificate Signer (PKCS#7)
+                        </summary>
+                        <div class="mt-2 space-y-2 text-[11px] text-slate-400">
+                            <p>If you have an Apple Developer Pass Type ID certificate (<code class="text-slate-200">signerCert.pem</code>) and private key (<code class="text-slate-200">signerKey.pem</code>), paste them below to cryptographically sign <code class="text-slate-200">manifest.json</code> in-browser so iOS Safari opens the native Wallet sheet directly without a companion app.</p>
+                            <input id="passTypeIdInput" type="text" value="pass.edu.abcusd.whitneyhs.studentid" placeholder="Pass Type Identifier (pass.com...)" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white mono-font text-xs">
+                            <input id="teamIdInput" type="text" value="WHSWILDCAT" placeholder="Apple Team ID (10 chars)" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white mono-font text-xs">
+                            <textarea id="signerCertPem" rows="2" placeholder="-----BEGIN CERTIFICATE----- (Pass Type ID Cert PEM)" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white mono-font text-[10px]"></textarea>
+                            <textarea id="signerKeyPem" rows="2" placeholder="-----BEGIN PRIVATE KEY----- (Unencrypted Key PEM)" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white mono-font text-[10px]"></textarea>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Offscreen Canvases for Crisp 1D Barcode Generation -->
+    <div class="hidden">
+        <canvas id="barcode39Canvas"></canvas>
+        <canvas id="barcode128Canvas"></canvas>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_KEY_PHOTO = 'whs_general_id_photo_v5';
+        const STORAGE_KEY_DATA  = 'whs_general_id_data_v5';
+        const LEGACY_PHOTO_KEYS = ['whs_general_id_photo_v4'];
+        const LEGACY_DATA_KEYS  = ['whs_general_id_data_v4'];
+
+        // Exact Locked CR80 Card Dimensions (882 / 1400 = 0.6300)
+        const CARD_W = 882;
+        const CARD_H = 1400;
+
+        // Portrait Frame Coordinates on the 882x1400 CR80 Card
+        const PORTRAIT_BOX = { x: 216, y: 518, w: 453, h: 582 };
+
+        const state = {
+            firstName: 'Matthew',
+            lastName: 'Flowerhill',
+            studentId: '449544',
+            grade: '11',
+            schoolYear: '26-27',
+            schoolName: 'WHITNEY HIGH SCHOOL',
+
+            // 'portrait_fill' (regular portrait photo), 'extract_from_id' (crops portrait from ID card photo), 'full_card_photo' (crops entire card)
+            photoMode: 'portrait_fill',
+            // 'code39' (Exact match to physical WHS card barcode), 'code128', 'card_only'
+            barcodeMode: 'code39',
+            barHeight: 220,
+            dockHeight: 380,
+
+            uploadedImage: null,
+            zoom: 1.0,
+            rotation: 0,
+            panX: 0,
+            panY: 0,
+
+            autoOpenWallet: false,
+
+            // Dissected normalized coordinates inside a physical card photo (e.g. IMG_1857_2.jpg)
+            dissectedFullCard: { x: 0.1367, y: 0.2627, w: 0.5677, h: 0.6748 },
+            dissectedPortrait: { x: 0.2810, y: 0.5175, w: 0.2800, h: 0.2705 }
+        };
+
+        const passCanvas = document.getElementById('passCanvas');
+        const ctx = passCanvas.getContext('2d');
+        let wakeLockSentinel = null;
+        let toastTimeout = null;
+
+        function showStatusToast(message, isLoading = false, durationMs = 2600) {
+            const toast = document.getElementById('statusToast');
+            const spinner = document.getElementById('statusToastSpinner');
+            const textEl = document.getElementById('statusToastText');
+            if (!toast || !textEl) return;
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            textEl.textContent = message;
+            spinner.style.display = isLoading ? 'inline-block' : 'none';
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+
+            if (!isLoading && durationMs > 0) {
+                toastTimeout = setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.classList.remove('flex');
+                }, durationMs);
+            }
+        }
+
+        function hideStatusToast() {
+            const toast = document.getElementById('statusToast');
+            if (!toast) return;
+            toast.classList.add('hidden');
+            toast.classList.remove('flex');
+        }
+
+        function roundRectPath(context, x, y, w, h, r) {
+            const radius = Math.min(r, w / 2, h / 2);
+            context.beginPath();
+            context.moveTo(x + radius, y);
+            context.arcTo(x + w, y, x + w, y + h, radius);
+            context.arcTo(x + w, y + h, x, y + h, radius);
+            context.arcTo(x, y + h, x, y, radius);
+            context.arcTo(x, y, x + w, y, radius);
+            context.closePath();
+        }
+
+        /**
+         * Sanitizes a Student ID for Code 39 (uppercase alphanumeric and allowed symbols).
+         */
+        function getSanitizedBarcodeValue() {
+            const raw = (state.studentId || '449544').trim().toUpperCase();
+            const cleaned = raw.replace(/[^0-9A-Z\-. $/+%]/g, '');
+            return cleaned || '000000';
+        }
+
+        /**
+         * Generates high-resolution 1D Barcodes (Code 39 & Code 128) for the student ID.
+         * Physical WHS ID cards use Code 39 (*449544*) which produces the exact 40-bar sequence.
+         */
+        function updateBarcodes() {
+            const codeValue = getSanitizedBarcodeValue();
+
+            // 1. Code 39 (Exact match to physical WHS card)
+            try {
+                JsBarcode('#barcode39Canvas', codeValue, {
+                    format: 'CODE39',
+                    width: 4,
+                    height: 240,
+                    displayValue: false,
+                    margin: 0,
+                    background: '#ffffff',
+                    lineColor: '#000000'
+                });
+            } catch (e) {
+                console.warn('Code 39 error:', e);
+            }
+
+            // 2. Code 128 (High-density 1D barcode)
+            try {
+                JsBarcode('#barcode128Canvas', codeValue, {
+                    format: 'CODE128',
+                    width: 4,
+                    height: 240,
+                    displayValue: false,
+                    margin: 0,
+                    background: '#ffffff',
+                    lineColor: '#000000'
+                });
+            } catch (e) {
+                console.warn('Code 128 error:', e);
+            }
+
+            renderPass();
+        }
+
+        /**
+         * Draws the dissected Whitney High School Coat of Arms / Heraldic Crest
+         * onto any 2D canvas context.
+         */
+        function drawDissectedWHSCrestOnContext(targetCtx, cx, topY, scaleFactor = 1.0) {
+            targetCtx.save();
+            targetCtx.translate(cx, topY);
+            if (scaleFactor !== 1.0) {
+                targetCtx.scale(scaleFactor, scaleFactor);
+            }
+
+            const gold = '#eecb27';
+            const dark = '#1b222c';
+            const white = '#f8fafc';
+
+            // 1. Top Torse & Lamp/Helm (y = 0 to 46)
+            targetCtx.fillStyle = gold;
+            roundRectPath(targetCtx, -34, 34, 68, 9, 4.5);
+            targetCtx.fill();
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(-18, 30);
+            targetCtx.lineTo(18, 30);
+            targetCtx.lineTo(24, 12);
+            targetCtx.lineTo(-12, 12);
+            targetCtx.closePath();
+            targetCtx.fill();
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(-6, 10);
+            targetCtx.quadraticCurveTo(4, -4, 16, 6);
+            targetCtx.quadraticCurveTo(8, 12, -6, 10);
+            targetCtx.fill();
+
+            // 2. Symmetrical Ornate Gold Acanthus Mantling (Left & Right)
+            [-1, 1].forEach((dir) => {
+                targetCtx.save();
+                targetCtx.scale(dir, 1);
+                targetCtx.fillStyle = gold;
+
+                targetCtx.beginPath();
+                targetCtx.moveTo(22, 14);
+                targetCtx.bezierCurveTo(64, -8, 118, 12, 106, 58);
+                targetCtx.bezierCurveTo(96, 38, 76, 36, 64, 52);
+                targetCtx.bezierCurveTo(106, 68, 118, 115, 92, 146);
+                targetCtx.bezierCurveTo(82, 126, 66, 122, 56, 136);
+                targetCtx.bezierCurveTo(94, 162, 118, 198, 102, 224);
+                targetCtx.bezierCurveTo(86, 236, 66, 220, 74, 202);
+                targetCtx.bezierCurveTo(82, 210, 92, 206, 88, 192);
+                targetCtx.bezierCurveTo(78, 174, 56, 168, 44, 182);
+                targetCtx.lineTo(42, 50);
+                targetCtx.closePath();
+                targetCtx.fill();
+
+                targetCtx.fillStyle = dark;
+                targetCtx.beginPath();
+                targetCtx.ellipse(82, 28, 12, 7, 0.4, 0, Math.PI * 2);
+                targetCtx.fill();
+                targetCtx.beginPath();
+                targetCtx.ellipse(86, 96, 11, 7, -0.3, 0, Math.PI * 2);
+                targetCtx.fill();
+
+                targetCtx.restore();
+            });
+
+            // 3. Central Heater Shield (x: -66 to 66, y: 46 to 232)
+            targetCtx.fillStyle = dark;
+            targetCtx.strokeStyle = gold;
+            targetCtx.lineWidth = 7.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-66, 46);
+            targetCtx.lineTo(66, 46);
+            targetCtx.lineTo(66, 130);
+            targetCtx.bezierCurveTo(66, 184, 34, 214, 0, 232);
+            targetCtx.bezierCurveTo(-34, 214, -66, 184, -66, 130);
+            targetCtx.closePath();
+            targetCtx.fill();
+            targetCtx.stroke();
+
+            // 4. Gold Shield Internal Divisions
+            targetCtx.fillStyle = gold;
+            targetCtx.fillRect(-6, 46, 12, 100);
+            targetCtx.beginPath();
+            targetCtx.moveTo(-64, 142);
+            targetCtx.quadraticCurveTo(0, 136, 64, 142);
+            targetCtx.lineTo(64, 152);
+            targetCtx.quadraticCurveTo(0, 146, -64, 152);
+            targetCtx.closePath();
+            targetCtx.fill();
+
+            // 5. Dissected Quadrant Symbols Inside Shield
+            targetCtx.strokeStyle = white;
+            targetCtx.fillStyle = white;
+
+            // Top-Left: Microscope & Drafting Compass
+            targetCtx.lineWidth = 2.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-58, 134);
+            targetCtx.lineTo(-12, 54);
+            targetCtx.stroke();
+
+            targetCtx.lineWidth = 3.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-44, 62);
+            targetCtx.lineTo(-48, 82);
+            targetCtx.moveTo(-54, 92);
+            targetCtx.lineTo(-38, 92);
+            targetCtx.stroke();
+            targetCtx.beginPath();
+            targetCtx.arc(-42, 76, 6, -Math.PI * 0.5, Math.PI * 0.5);
+            targetCtx.stroke();
+
+            targetCtx.lineWidth = 3.2;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-26, 92);
+            targetCtx.lineTo(-35, 130);
+            targetCtx.moveTo(-26, 92);
+            targetCtx.lineTo(-17, 130);
+            targetCtx.stroke();
+            targetCtx.beginPath();
+            targetCtx.arc(-26, 90, 3.5, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            // Top-Right: Drama Masks & Winged Foot
+            targetCtx.lineWidth = 2.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(12, 134);
+            targetCtx.lineTo(58, 54);
+            targetCtx.stroke();
+
+            targetCtx.beginPath();
+            targetCtx.ellipse(24, 74, 8, 10, -0.15, 0, Math.PI * 2);
+            targetCtx.ellipse(38, 82, 8, 10, 0.15, 0, Math.PI * 2);
+            targetCtx.fill();
+            targetCtx.fillStyle = dark;
+            targetCtx.beginPath();
+            targetCtx.arc(22, 72, 1.8, 0, Math.PI * 2);
+            targetCtx.arc(27, 72, 1.8, 0, Math.PI * 2);
+            targetCtx.arc(36, 80, 1.8, 0, Math.PI * 2);
+            targetCtx.arc(41, 80, 1.8, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            targetCtx.fillStyle = white;
+            targetCtx.beginPath();
+            targetCtx.moveTo(32, 122);
+            targetCtx.lineTo(52, 112);
+            targetCtx.lineTo(48, 128);
+            targetCtx.closePath();
+            targetCtx.fill();
+
+            // Bottom Compartment: Graduation Mortarboard Cap Above Open Book
+            targetCtx.fillStyle = white;
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, 156);
+            targetCtx.lineTo(22, 164);
+            targetCtx.lineTo(0, 172);
+            targetCtx.lineTo(-22, 164);
+            targetCtx.closePath();
+            targetCtx.fill();
+            targetCtx.fillRect(-10, 169, 20, 8);
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, 186);
+            targetCtx.quadraticCurveTo(-18, 182, -34, 190);
+            targetCtx.lineTo(-30, 206);
+            targetCtx.quadraticCurveTo(-15, 198, 0, 204);
+            targetCtx.quadraticCurveTo(15, 198, 30, 206);
+            targetCtx.lineTo(34, 190);
+            targetCtx.quadraticCurveTo(18, 182, 0, 186);
+            targetCtx.closePath();
+            targetCtx.fill();
+
+            // 6. Double Arched Ribbon Scroll Below Shield
+            targetCtx.strokeStyle = gold;
+            targetCtx.lineWidth = 4;
+            targetCtx.fillStyle = dark;
+
+            targetCtx.beginPath();
+            targetCtx.moveTo(-90, 274);
+            targetCtx.quadraticCurveTo(0, 244, 90, 274);
+            targetCtx.lineTo(82, 306);
+            targetCtx.quadraticCurveTo(0, 278, -82, 306);
+            targetCtx.closePath();
+            targetCtx.fill();
+            targetCtx.stroke();
+
+            targetCtx.lineWidth = 4.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-110, 286);
+            targetCtx.lineTo(-96, 289);
+            targetCtx.moveTo(110, 286);
+            targetCtx.lineTo(96, 289);
+            targetCtx.stroke();
+
+            targetCtx.fillStyle = white;
+            targetCtx.font = '800 22px "Times New Roman", Georgia, serif';
+            targetCtx.textAlign = 'center';
+            targetCtx.fillText('WHITNEY', 0, 281);
+
+            targetCtx.font = '700 11.5px Inter, Arial, sans-serif';
+            targetCtx.fillText('HIGH SCHOOL', 0, 294);
+
+            targetCtx.strokeStyle = gold;
+            targetCtx.lineWidth = 4.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(-102, 326);
+            targetCtx.quadraticCurveTo(-55, 312, -24, 302);
+            targetCtx.moveTo(102, 326);
+            targetCtx.quadraticCurveTo(55, 312, 24, 302);
+            targetCtx.stroke();
+
+            targetCtx.restore();
+        }
+
+        /**
+         * Draws the three diagonal white Wildcat Claw Scratches.
+         */
+        function drawDissectedClawScratches() {
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+
+            // Claw Scratch 1 (Upper)
+            ctx.beginPath();
+            ctx.moveTo(140, 848);
+            ctx.lineTo(182, 808);
+            ctx.lineTo(216, 788);
+            ctx.lineTo(502, 520);
+            ctx.lineTo(555, 492);
+            ctx.lineTo(598, 480);
+            ctx.lineTo(576, 502);
+            ctx.lineTo(584, 504);
+            ctx.lineTo(542, 524);
+            ctx.lineTo(216, 816);
+            ctx.lineTo(176, 838);
+            ctx.lineTo(140, 874);
+            ctx.closePath();
+            ctx.fill();
+
+            // Claw Scratch 2 (Middle)
+            ctx.beginPath();
+            ctx.moveTo(140, 1014);
+            ctx.lineTo(180, 972);
+            ctx.lineTo(216, 952);
+            ctx.lineTo(669, 692);
+            ctx.lineTo(700, 668);
+            ctx.lineTo(796, 578);
+            ctx.lineTo(872, 546);
+            ctx.lineTo(818, 588);
+            ctx.lineTo(700, 698);
+            ctx.lineTo(669, 728);
+            ctx.lineTo(216, 988);
+            ctx.lineTo(178, 1012);
+            ctx.lineTo(140, 1046);
+            ctx.closePath();
+            ctx.fill();
+
+            // Claw Scratch 3 (Lower)
+            ctx.beginPath();
+            ctx.moveTo(246, 1134);
+            ctx.lineTo(278, 1098);
+            ctx.lineTo(669, 862);
+            ctx.lineTo(700, 824);
+            ctx.lineTo(832, 718);
+            ctx.lineTo(872, 682);
+            ctx.lineTo(832, 738);
+            ctx.lineTo(700, 868);
+            ctx.lineTo(669, 902);
+            ctx.lineTo(286, 1106);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        /**
+         * Helper to draw the student portrait into any target rectangle on a given canvas context.
+         */
+        function drawPortraitIntoRect(targetCtx, portX, portY, portW, portH, showUploadHint = true) {
+            const skyGrad = targetCtx.createLinearGradient(portX, portY, portX, portY + portH);
+            skyGrad.addColorStop(0, '#67c7eb');
+            skyGrad.addColorStop(1, '#4aa8d8');
+            targetCtx.fillStyle = skyGrad;
+            targetCtx.fillRect(portX, portY, portW, portH);
+
+            targetCtx.save();
+            targetCtx.beginPath();
+            targetCtx.rect(portX, portY, portW, portH);
+            targetCtx.clip();
+
+            if (state.uploadedImage) {
+                const img = state.uploadedImage;
+                let sx = 0, sy = 0, sw = img.width, sh = img.height;
+
+                // Always honor 'extract_from_id' when selected, regardless of camera aspect ratio
+                if (state.photoMode === 'extract_from_id') {
+                    sx = img.width * state.dissectedPortrait.x;
+                    sy = img.height * state.dissectedPortrait.y;
+                    sw = img.width * state.dissectedPortrait.w;
+                    sh = img.height * state.dissectedPortrait.h;
+                }
+
+                const srcRatio = sw / sh;
+                const dstRatio = portW / portH;
+                let drawW = portW;
+                let drawH = portH;
+                if (srcRatio > dstRatio) {
+                    drawH = portH;
+                    drawW = portH * srcRatio;
+                } else {
+                    drawW = portW;
+                    drawH = portW / srcRatio;
+                }
+
+                const scaleX = portW / PORTRAIT_BOX.w;
+                const scaleY = portH / PORTRAIT_BOX.h;
+
+                targetCtx.translate(
+                    portX + portW / 2 + state.panX * scaleX,
+                    portY + portH / 2 + state.panY * scaleY
+                );
+                targetCtx.rotate((state.rotation * Math.PI) / 180);
+                targetCtx.drawImage(
+                    img,
+                    sx, sy, sw, sh,
+                    (-drawW / 2) * state.zoom,
+                    (-drawH / 2) * state.zoom,
+                    drawW * state.zoom,
+                    drawH * state.zoom
+                );
+            } else {
+                const scale = portW / PORTRAIT_BOX.w;
+                targetCtx.fillStyle = '#181e26';
+                targetCtx.beginPath();
+                targetCtx.ellipse(portX + portW / 2, portY + portH + 30 * scale, 235 * scale, 175 * scale, 0, Math.PI, 0, false);
+                targetCtx.fill();
+
+                targetCtx.fillStyle = '#3890be';
+                targetCtx.beginPath();
+                targetCtx.arc(portX + portW / 2, portY + 235 * scale, 86 * scale, 0, Math.PI * 2);
+                targetCtx.fill();
+
+                if (showUploadHint) {
+                    targetCtx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+                    roundRectPath(targetCtx, portX + 28 * scale, portY + portH - 86 * scale, portW - 56 * scale, 56 * scale, 14 * scale);
+                    targetCtx.fill();
+                    targetCtx.fillStyle = '#f5dc00';
+                    targetCtx.font = `800 ${Math.round(20 * scale)}px Inter, sans-serif`;
+                    targetCtx.textAlign = 'center';
+                    targetCtx.fillText('TAP TO UPLOAD PHOTO / HEIC', portX + portW / 2, portY + portH - 51 * scale);
+                }
+            }
+            targetCtx.restore();
+        }
+
+        /**
+         * Renders the exact 882 x 1400 CR80 Whitney High School ID Card on the top portion of the canvas.
+         */
+        function renderExactCR80Card() {
+            ctx.save();
+
+            // If user chose "Use Full Cropped ID Photo" and uploaded an image, draw the full cropped card
+            if (state.photoMode === 'full_card_photo' && state.uploadedImage) {
+                const img = state.uploadedImage;
+                const sx = img.width * state.dissectedFullCard.x;
+                const sy = img.height * state.dissectedFullCard.y;
+                const sw = img.width * state.dissectedFullCard.w;
+                const sh = img.height * state.dissectedFullCard.h;
+
+                roundRectPath(ctx, 0, 0, CARD_W, CARD_H, 48);
+                ctx.clip();
+
+                ctx.translate(CARD_W / 2 + state.panX, CARD_H / 2 + state.panY);
+                ctx.rotate((state.rotation * Math.PI) / 180);
+                ctx.drawImage(
+                    img,
+                    sx, sy, sw, sh,
+                    (-CARD_W / 2) * state.zoom,
+                    (-CARD_H / 2) * state.zoom,
+                    CARD_W * state.zoom,
+                    CARD_H * state.zoom
+                );
+                ctx.restore();
+                return;
+            }
+
+            // 1. Outer White PVC Card Blank (882 x 1400, radius 48)
+            ctx.fillStyle = '#eef0f2';
+            roundRectPath(ctx, 0, 0, CARD_W, CARD_H, 48);
+            ctx.fill();
+
+            // 2. Inner Printed Card Surface (Inset by 10px left/right, 12px top/bottom)
+            const inX = 10;
+            const inY = 12;
+            const inW = CARD_W - 20; // 862
+            const inH = CARD_H - 24; // 1376
+
+            ctx.save();
+            roundRectPath(ctx, inX, inY, inW, inH, 38);
+            ctx.clip();
+
+            // Main Dark Navy-Charcoal Background (#1c232d)
+            ctx.fillStyle = '#1c232d';
+            ctx.fillRect(inX, inY, inW, inH);
+
+            // 3. Three White Wildcat Claw Scratches
+            drawDissectedClawScratches();
+
+            // 4. Left Yellow Vertical Strip (x = 10 to 140, width = 130px = 14.74% of card W)
+            const stripW = 130;
+            ctx.fillStyle = '#f5dc00';
+            ctx.fillRect(inX, inY, stripW, inH);
+
+            // Vertical "WHITNEY HIGH SCHOOL" Text (Spans 91.1% of card height, bottom-to-top)
+            ctx.save();
+            ctx.translate(inX + stripW * 0.78, CARD_H / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#1c232d';
+            ctx.font = '800 82px Arial, "Helvetica Neue", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            const schoolTitle = (state.schoolName || 'WHITNEY HIGH SCHOOL').toUpperCase();
+            const measuredW = ctx.measureText(schoolTitle).width;
+            const targetSpan = 1272;
+            if (measuredW > 0) {
+                ctx.scale(targetSpan / measuredW, 1.0);
+            }
+            ctx.fillText(schoolTitle, 0, 0);
+            ctx.restore();
+
+            // 5. Lanyard Slot Cutout (Center X = 458 [51.9%], Top Y = 68 [4.85%], 206 x 56 px)
+            const slotW = 206;
+            const slotH = 56;
+            const slotX = 458 - slotW / 2;
+            const slotY = 68;
+
+            ctx.fillStyle = '#d8dee6';
+            roundRectPath(ctx, slotX - 4, slotY - 4, slotW + 8, slotH + 8, 30);
+            ctx.fill();
+
+            ctx.fillStyle = '#090c10';
+            roundRectPath(ctx, slotX, slotY, slotW, slotH, 28);
+            ctx.fill();
+
+            // 6. Dissected WHS Heraldic Crest (Centered at x = 443 [50.2%], y = 122 to 456)
+            drawDissectedWHSCrestOnContext(ctx, 443, 122, 1.0);
+
+            // 7. Top-Right School Year ("26-27") & Yellow Grade Box ("11")
+            ctx.fillStyle = '#f5dc00';
+            ctx.font = '800 56px Arial, "Helvetica Neue", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(state.schoolYear || '26-27', 744, 128);
+
+            const gradeBoxX = 698;
+            const gradeBoxY = 203;
+            const gradeBoxW = 142;
+            const gradeBoxH = 84;
+            ctx.fillStyle = '#f5dc00';
+            ctx.fillRect(gradeBoxX, gradeBoxY, gradeBoxW, gradeBoxH);
+
+            ctx.fillStyle = '#1c232d';
+            ctx.font = '800 54px Arial, "Helvetica Neue", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(state.grade || '11', gradeBoxX + gradeBoxW / 2, gradeBoxY + 62);
+
+            // 8. Center Portrait Frame (x = 216, y = 518, w = 453, h = 582)
+            drawPortraitIntoRect(ctx, PORTRAIT_BOX.x, PORTRAIT_BOX.y, PORTRAIT_BOX.w, PORTRAIT_BOX.h, true);
+
+            // Yellow Portrait Frame Border (9px solid #f5dc00)
+            ctx.strokeStyle = '#f5dc00';
+            ctx.lineWidth = 9;
+            ctx.strokeRect(PORTRAIT_BOX.x, PORTRAIT_BOX.y, PORTRAIT_BOX.w, PORTRAIT_BOX.h);
+
+            // 9. Right-Side Vertical 1D Barcode (Exact Code 39 40-bar pattern)
+            const vBarX = 700;
+            const vBarY = 560;
+            const vBarW = 132;
+            const vBarH = 524;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(vBarX, vBarY, vBarW, vBarH);
+
+            const cardSideBarcode = document.getElementById('barcode39Canvas');
+            if (cardSideBarcode && cardSideBarcode.width > 0) {
+                ctx.save();
+                ctx.translate(vBarX + vBarW / 2, vBarY + vBarH / 2);
+                ctx.rotate(Math.PI / 2);
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(cardSideBarcode, -vBarH / 2 + 10, -vBarW / 2, vBarH - 20, vBarW);
+                ctx.restore();
+            }
+
+            // 10. Bottom 3-Line Student Name & 6-Digit ID (Centered at x = 443)
+            const textCenterX = 443;
+            ctx.textAlign = 'center';
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '700 60px Arial, "Helvetica Neue", Inter, sans-serif';
+            ctx.fillText(state.firstName || 'First Name', textCenterX, 1186);
+            ctx.fillText(state.lastName || 'Last Name', textCenterX, 1272);
+
+            ctx.fillStyle = '#e5e7eb';
+            ctx.font = '700 50px Arial, "Helvetica Neue", Inter, sans-serif';
+            ctx.fillText(state.studentId || '000000', textCenterX, 1364);
+
+            ctx.restore();
+            ctx.restore();
+        }
+
+        /**
+         * Master Render Function:
+         * - Top 882 x 1400 is ALWAYS the exact CR80 Whitney High School ID card.
+         * - Bottom section renders a large, full-width, high-contrast 1D Barcode.
+         */
+        function renderPass() {
+            const showBottomDock = state.barcodeMode !== 'card_only';
+            const totalH = showBottomDock ? (CARD_H + state.dockHeight) : CARD_H;
+
+            if (passCanvas.width !== CARD_W || passCanvas.height !== totalH) {
+                passCanvas.width = CARD_W;
+                passCanvas.height = totalH;
+                passCanvas.style.aspectRatio = `${CARD_W} / ${totalH}`;
+            }
+
+            ctx.clearRect(0, 0, passCanvas.width, passCanvas.height);
+
+            // Dark pass backdrop
+            ctx.fillStyle = '#0d131d';
+            ctx.fillRect(0, 0, passCanvas.width, passCanvas.height);
+
+            // 1. Render Exact 882x1400 CR80 Card on Top
+            renderExactCR80Card();
+
+            // 2. Render Big Bottom 1D Barcode Dock (if enabled)
+            if (showBottomDock) {
+                const pad = 10;
+                const dockX = pad;
+                const dockY = CARD_H + 14;
+                const dockW = CARD_W - pad * 2;
+                const dockH = state.dockHeight - 24;
+
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                roundRectPath(ctx, dockX, dockY, dockW, dockH, 40);
+                ctx.fill();
+
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#f5dc00';
+                ctx.stroke();
+
+                const activeBarcodeCanvas = state.barcodeMode === 'code128'
+                    ? document.getElementById('barcode128Canvas')
+                    : document.getElementById('barcode39Canvas');
+
+                const quietMarginX = 46;
+                const barDrawW = dockW - quietMarginX * 2;
+                const barDrawH = Math.min(state.barHeight, dockH - 105);
+                const barDrawX = dockX + quietMarginX;
+                const barDrawY = dockY + 30 + (dockH - 96 - barDrawH) / 2;
+
+                if (activeBarcodeCanvas && activeBarcodeCanvas.width > 0) {
+                    ctx.save();
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(activeBarcodeCanvas, barDrawX, barDrawY, barDrawW, barDrawH);
+                    ctx.restore();
+                }
+
+                ctx.fillStyle = '#111827';
+                ctx.font = '800 44px "JetBrains Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(state.studentId || '000000', CARD_W / 2, dockY + dockH - 26);
+
+                ctx.restore();
+            }
+
+            updateWalletModalPreview();
+        }
+
+        function saveStudentDataToStorage() {
+            try {
+                const payload = {
+                    firstName: state.firstName,
+                    lastName: state.lastName,
+                    studentId: state.studentId,
+                    grade: state.grade,
+                    schoolYear: state.schoolYear,
+                    photoMode: state.photoMode,
+                    barcodeMode: state.barcodeMode,
+                    zoom: state.zoom,
+                    rotation: state.rotation,
+                    panX: state.panX,
+                    panY: state.panY,
+                    autoOpenWallet: state.autoOpenWallet
+                };
+                localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(payload));
+            } catch (e) {}
+        }
+
+        function syncPhotoModeButtons() {
+            document.querySelectorAll('.photo-mode-btn').forEach((btn) => {
+                const mode = btn.getAttribute('data-photomode');
+                if (mode === state.photoMode) {
+                    btn.className = 'photo-mode-btn py-2.5 px-3 rounded-xl font-bold text-xs transition bg-[#f5dc00] text-slate-950 shadow';
+                } else {
+                    btn.className = 'photo-mode-btn py-2.5 px-3 rounded-xl font-bold text-xs transition text-slate-400 hover:text-white';
+                }
+            });
+        }
+
+        function syncBarcodeModeButtons() {
+            document.querySelectorAll('.barcode-mode-btn').forEach((btn) => {
+                const mode = btn.getAttribute('data-barcodemode');
+                if (mode === state.barcodeMode) {
+                    btn.className = 'barcode-mode-btn p-3 rounded-2xl border border-[#f5dc00] bg-[#f5dc00]/15 text-white text-left transition';
+                } else {
+                    btn.className = 'barcode-mode-btn p-3 rounded-2xl border border-slate-800 bg-slate-950 text-slate-300 text-left transition';
+                }
+            });
+
+            const viewBarBtn = document.getElementById('viewModeBarcodeBtn');
+            const viewCardBtn = document.getElementById('viewModeCardOnlyBtn');
+            if (state.barcodeMode === 'card_only') {
+                viewCardBtn.className = 'py-2 px-3 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-1.5 bg-[#f5dc00] text-slate-950 shadow';
+                viewBarBtn.className = 'py-2 px-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white';
+            } else {
+                viewBarBtn.className = 'py-2 px-3 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-1.5 bg-[#f5dc00] text-slate-950 shadow';
+                viewCardBtn.className = 'py-2 px-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white';
+            }
+        }
+
+        function syncSlidersUI() {
+            const zoomSlider = document.getElementById('zoomSlider');
+            const rotateSlider = document.getElementById('rotateSlider');
+            const panXSlider = document.getElementById('panXSlider');
+            const panYSlider = document.getElementById('panYSlider');
+
+            zoomSlider.value = state.zoom;
+            rotateSlider.value = state.rotation;
+            panXSlider.value = state.panX;
+            panYSlider.value = state.panY;
+
+            const zoomText = `${Math.round(state.zoom * 100)}%`;
+            const rotText = `${state.rotation}°`;
+            const panXText = `${Math.round(state.panX)} px`;
+            const panYText = `${Math.round(state.panY)} px`;
+
+            document.getElementById('zoomLabel').textContent = zoomText;
+            document.getElementById('rotateLabel').textContent = rotText;
+            document.getElementById('panXLabel').textContent = panXText;
+            document.getElementById('panYLabel').textContent = panYText;
+
+            zoomSlider.setAttribute('aria-valuetext', zoomText);
+            rotateSlider.setAttribute('aria-valuetext', `${state.rotation} degrees`);
+            panXSlider.setAttribute('aria-valuetext', `${Math.round(state.panX)} pixels`);
+            panYSlider.setAttribute('aria-valuetext', `${Math.round(state.panY)} pixels`);
+        }
+
+        /**
+         * Normalizes and compresses an HTMLImageElement onto an offscreen canvas so that even
+         * 12MP/48MP iPhone HEIC photos fit comfortably inside iOS Safari's 5MB localStorage quota.
+         */
+        function normalizeImageForStorage(img, maxDim = 1500) {
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (w > maxDim || h > maxDim) {
+                if (w > h) {
+                    h = Math.round((h * maxDim) / w);
+                    w = maxDim;
+                } else {
+                    w = Math.round((w * maxDim) / h);
+                    h = maxDim;
+                }
+            }
+            const normCanvas = document.createElement('canvas');
+            normCanvas.width = w;
+            normCanvas.height = h;
+            const normCtx = normCanvas.getContext('2d');
+            normCtx.drawImage(img, 0, 0, w, h);
+            return normCanvas.toDataURL('image/jpeg', 0.88);
+        }
+
+        /**
+         * Detects whether a File/Blob is in Apple's HEIC / HEIF format via MIME type,
+         * filename extension, or ISO Base Media File Format (ftyp) magic bytes.
+         */
+        async function isHeicOrHeifFile(file) {
+            if (!file) return false;
+            const type = (file.type || '').toLowerCase();
+            const name = (file.name || '').toLowerCase();
+            if (type.includes('heic') || type.includes('heif') || /\.heic$|\.heif$/i.test(name)) {
+                return true;
+            }
+            try {
+                const headerBuf = await file.slice(0, 16).arrayBuffer();
+                const bytes = new Uint8Array(headerBuf);
+                if (bytes.length >= 12) {
+                    const boxType = String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7]);
+                    const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]).toLowerCase();
+                    if (boxType === 'ftyp' && ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1', 'heis'].includes(brand)) {
+                        return true;
+                    }
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        /**
+         * Loads a Blob or Data URL into an HTMLImageElement, returning a Promise.
+         */
+        function loadImageElement(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = (err) => reject(err);
+                img.src = src;
+            });
+        }
+
+        /**
+         * Universal Photo / HEIC Upload Handler:
+         * 1. Detects .HEIC/.HEIF files (by extension, MIME, or ftyp magic bytes).
+         * 2. Attempts native Safari hardware HEIC decode first; falls back to heic2any (libheif)
+         *    for Chrome, Firefox, Edge, and unsupported HEIC containers.
+         * 3. Normalizes and compresses the decoded image to a clean JPEG dataURL so iPhone
+         *    localStorage never throws QuotaExceededError.
+         */
+        async function handleUploadedPhotoFile(file) {
+            if (!file) return;
+
+            const isHeic = await isHeicOrHeifFile(file);
+            const subtextEl = document.getElementById('photoStatusSubtext');
+            showStatusToast(isHeic ? 'Converting iPhone HEIC photo...' : 'Loading photo...', true);
+
+            let decodedImg = null;
+
+            try {
+                // Stage 1: Try native browser decode first (fast path on iOS/macOS Safari)
+                const objectUrl = URL.createObjectURL(file);
+                try {
+                    decodedImg = await loadImageElement(objectUrl);
+                } finally {
+                    URL.revokeObjectURL(objectUrl);
+                }
+            } catch (nativeErr) {
+                // Stage 2: Convert via heic2any if native browser decode failed
+                if (typeof window.heic2any === 'function') {
+                    try {
+                        showStatusToast('Decoding HEIC image for browser...', true);
+                        const resultBlobOrArray = await window.heic2any({
+                            blob: file,
+                            toType: 'image/jpeg',
+                            quality: 0.92
+                        });
+                        const targetBlob = Array.isArray(resultBlobOrArray) ? resultBlobOrArray[0] : resultBlobOrArray;
+                        const convertedUrl = URL.createObjectURL(targetBlob);
+                        try {
+                            decodedImg = await loadImageElement(convertedUrl);
+                        } finally {
+                            URL.revokeObjectURL(convertedUrl);
+                        }
+                    } catch (heicErr) {
+                        console.error('HEIC conversion failed:', heicErr);
+                        showStatusToast('Could not decode HEIC file. Try another photo.', false, 3500);
+                        return;
+                    }
+                } else {
+                    showStatusToast('Unsupported image format.', false, 3500);
+                    return;
+                }
+            }
+
+            if (!decodedImg) {
+                hideStatusToast();
+                return;
+            }
+
+            // Normalize to compressed JPEG so localStorage persists reliably on iPhone
+            const normalizedDataUrl = normalizeImageForStorage(decodedImg, 1500);
+            const finalImg = await loadImageElement(normalizedDataUrl);
+
+            state.uploadedImage = finalImg;
+            state.zoom = 1.0;
+            state.rotation = 0;
+            state.panX = 0;
+            state.panY = 0;
+            syncSlidersUI();
+
+            syncPhotoModeButtons();
+            document.getElementById('uploadBtnText').textContent = 'Change Photo / HEIC';
+            if (subtextEl) {
+                subtextEl.textContent = `Loaded ${file.name || 'photo'} (${finalImg.width}×${finalImg.height}) • Saved to device`;
+            }
+
+            try {
+                localStorage.setItem(STORAGE_KEY_PHOTO, normalizedDataUrl);
+            } catch (storageErr) {
+                // If storage is still tight, re-compress at 960px
+                try {
+                    const smallerDataUrl = normalizeImageForStorage(decodedImg, 960);
+                    localStorage.setItem(STORAGE_KEY_PHOTO, smallerDataUrl);
+                } catch (e2) {}
+            }
+
+            saveStudentDataToStorage();
+            renderPass();
+            showStatusToast(isHeic ? 'HEIC photo converted & applied!' : 'Photo updated!', false, 2200);
+        }
+
+        function applyImageFromSrc(src, saveToStorage = false, preferredMode = null) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                state.uploadedImage = img;
+                if (preferredMode) {
+                    state.photoMode = preferredMode;
+                }
+                syncPhotoModeButtons();
+                document.getElementById('uploadBtnText').textContent = 'Change Photo / HEIC';
+
+                if (saveToStorage) {
+                    try {
+                        const norm = normalizeImageForStorage(img, 1400);
+                        localStorage.setItem(STORAGE_KEY_PHOTO, norm);
+                    } catch (e) {}
+                }
+                renderPass();
+            };
+            img.src = src;
+        }
+
+        function initAutoLoad() {
+            try {
+                let rawData = localStorage.getItem(STORAGE_KEY_DATA);
+                if (!rawData) {
+                    for (const k of LEGACY_DATA_KEYS) {
+                        rawData = localStorage.getItem(k);
+                        if (rawData) break;
+                    }
+                }
+                const savedData = JSON.parse(rawData || 'null');
+                if (savedData && savedData.studentId) {
+                    state.firstName = savedData.firstName || 'Matthew';
+                    state.lastName = savedData.lastName || 'Flowerhill';
+                    state.studentId = savedData.studentId || '449544';
+                    state.grade = savedData.grade || '11';
+                    state.schoolYear = savedData.schoolYear || '26-27';
+                    if (savedData.photoMode) state.photoMode = savedData.photoMode;
+                    if (savedData.barcodeMode) state.barcodeMode = savedData.barcodeMode;
+                    if (typeof savedData.zoom === 'number') state.zoom = savedData.zoom;
+                    if (typeof savedData.rotation === 'number') state.rotation = savedData.rotation;
+                    if (typeof savedData.panX === 'number') state.panX = savedData.panX;
+                    if (typeof savedData.panY === 'number') state.panY = savedData.panY;
+                    if (typeof savedData.autoOpenWallet === 'boolean') state.autoOpenWallet = savedData.autoOpenWallet;
+
+                    document.getElementById('firstNameInput').value = state.firstName;
+                    document.getElementById('lastNameInput').value = state.lastName;
+                    document.getElementById('studentIdInput').value = state.studentId;
+                    document.getElementById('gradeSelect').value = state.grade;
+                    document.getElementById('schoolYearInput').value = state.schoolYear;
+                    document.getElementById('autoOpenWalletToggle').checked = state.autoOpenWallet;
+                    syncPhotoModeButtons();
+                    syncBarcodeModeButtons();
+                    syncSlidersUI();
+                }
+            } catch (e) {}
+
+            let savedPhoto = localStorage.getItem(STORAGE_KEY_PHOTO);
+            if (!savedPhoto) {
+                for (const k of LEGACY_PHOTO_KEYS) {
+                    savedPhoto = localStorage.getItem(k);
+                    if (savedPhoto) break;
+                }
+            }
+            if (savedPhoto) {
+                applyImageFromSrc(savedPhoto, false, state.photoMode);
+                return;
+            }
+
+            const tryFiles = ['IMG_1857_2.jpg', 'IMG_1857.jpg', 'IMG_1857.HEIC', 'IMG_1857.heic'];
+            let idx = 0;
+            function tryNextFile() {
+                if (idx >= tryFiles.length) {
+                    renderPass();
+                    return;
+                }
+                const probe = new Image();
+                probe.crossOrigin = 'anonymous';
+                probe.onload = () => {
+                    state.uploadedImage = probe;
+                    state.photoMode = 'extract_from_id';
+                    syncPhotoModeButtons();
+                    document.getElementById('uploadBtnText').textContent = 'Change Photo / HEIC';
+                    renderPass();
+                };
+                probe.onerror = () => {
+                    idx++;
+                    tryNextFile();
+                };
+                probe.src = tryFiles[idx];
+            }
+            tryNextFile();
+        }
+
+        // Student Info Inputs
+        document.getElementById('firstNameInput').addEventListener('input', (e) => {
+            state.firstName = e.target.value;
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        document.getElementById('lastNameInput').addEventListener('input', (e) => {
+            state.lastName = e.target.value;
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        document.getElementById('studentIdInput').addEventListener('input', (e) => {
+            state.studentId = e.target.value || '000000';
+            saveStudentDataToStorage();
+            updateBarcodes();
+        });
+        document.getElementById('gradeSelect').addEventListener('change', (e) => {
+            state.grade = e.target.value;
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        document.getElementById('schoolYearInput').addEventListener('input', (e) => {
+            state.schoolYear = e.target.value;
+            saveStudentDataToStorage();
+            renderPass();
+        });
+
+        document.getElementById('loadSampleStudentBtn').addEventListener('click', () => {
+            state.firstName = 'Matthew';
+            state.lastName = 'Flowerhill';
+            state.studentId = '449544';
+            state.grade = '11';
+            state.schoolYear = '26-27';
+
+            document.getElementById('firstNameInput').value = state.firstName;
+            document.getElementById('lastNameInput').value = state.lastName;
+            document.getElementById('studentIdInput').value = state.studentId;
+            document.getElementById('gradeSelect').value = state.grade;
+            document.getElementById('schoolYearInput').value = state.schoolYear;
+            saveStudentDataToStorage();
+            updateBarcodes();
+        });
+
+        document.getElementById('clearFormBtn').addEventListener('click', () => {
+            state.firstName = '';
+            state.lastName = '';
+            state.studentId = '';
+            document.getElementById('firstNameInput').value = '';
+            document.getElementById('lastNameInput').value = '';
+            document.getElementById('studentIdInput').value = '';
+            document.getElementById('firstNameInput').focus();
+            saveStudentDataToStorage();
+            updateBarcodes();
+        });
+
+        // Photo Upload & Drag-and-Drop (Supports .heic, .heif, .jpg, .png, .webp)
+        document.getElementById('photoUploadInput').addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            handleUploadedPhotoFile(file);
+            e.target.value = '';
+        });
+
+        window.addEventListener('dragover', (e) => e.preventDefault());
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (file) {
+                handleUploadedPhotoFile(file);
+            }
+        });
+
+        // Photo Mode Buttons
+        document.querySelectorAll('.photo-mode-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                state.photoMode = btn.getAttribute('data-photomode');
+                syncPhotoModeButtons();
+                saveStudentDataToStorage();
+                renderPass();
+            });
+        });
+
+        // Barcode Mode & View Toggle Buttons
+        document.querySelectorAll('.barcode-mode-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                state.barcodeMode = btn.getAttribute('data-barcodemode');
+                syncBarcodeModeButtons();
+                saveStudentDataToStorage();
+                renderPass();
+            });
+        });
+
+        document.getElementById('viewModeBarcodeBtn').addEventListener('click', () => {
+            state.barcodeMode = 'code39';
+            syncBarcodeModeButtons();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+
+        document.getElementById('viewModeCardOnlyBtn').addEventListener('click', () => {
+            state.barcodeMode = 'card_only';
+            syncBarcodeModeButtons();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+
+        // Sliders
+        const zoomSlider = document.getElementById('zoomSlider');
+        const rotateSlider = document.getElementById('rotateSlider');
+        const panXSlider = document.getElementById('panXSlider');
+        const panYSlider = document.getElementById('panYSlider');
+        const barHeightSlider = document.getElementById('barHeightSlider');
+        const dockHeightSlider = document.getElementById('dockHeightSlider');
+
+        zoomSlider.addEventListener('input', (e) => {
+            state.zoom = parseFloat(e.target.value);
+            syncSlidersUI();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        rotateSlider.addEventListener('input', (e) => {
+            state.rotation = parseFloat(e.target.value);
+            syncSlidersUI();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        panXSlider.addEventListener('input', (e) => {
+            state.panX = parseFloat(e.target.value);
+            syncSlidersUI();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        panYSlider.addEventListener('input', (e) => {
+            state.panY = parseFloat(e.target.value);
+            syncSlidersUI();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+        barHeightSlider.addEventListener('input', (e) => {
+            state.barHeight = parseInt(e.target.value, 10);
+            const txt = `${state.barHeight} px`;
+            document.getElementById('barHeightLabel').textContent = txt;
+            barHeightSlider.setAttribute('aria-valuetext', `${state.barHeight} pixels`);
+            renderPass();
+        });
+        dockHeightSlider.addEventListener('input', (e) => {
+            state.dockHeight = parseInt(e.target.value, 10);
+            const txt = `${state.dockHeight} px`;
+            document.getElementById('dockHeightLabel').textContent = txt;
+            dockHeightSlider.setAttribute('aria-valuetext', `${state.dockHeight} pixels`);
+            renderPass();
+        });
+
+        document.getElementById('resetCropBtn').addEventListener('click', () => {
+            state.zoom = 1.0;
+            state.rotation = 0;
+            state.panX = 0;
+            state.panY = 0;
+            syncSlidersUI();
+            saveStudentDataToStorage();
+            renderPass();
+        });
+
+        document.getElementById('removePhotoBtn').addEventListener('click', () => {
+            state.uploadedImage = null;
+            localStorage.removeItem(STORAGE_KEY_PHOTO);
+            LEGACY_PHOTO_KEYS.forEach((k) => localStorage.removeItem(k));
+            document.getElementById('uploadBtnText').textContent = 'Upload Photo / HEIC';
+            const subtextEl = document.getElementById('photoStatusSubtext');
+            if (subtextEl) {
+                subtextEl.textContent = 'Automatically converts iPhone HEIC/HEIF photos & saves offline';
+            }
+            renderPass();
+        });
+
+        /**
+         * Smart iPhone Touch & Pointer Gestures on Canvas:
+         * - Tapping empty portrait box opens photo/HEIC picker.
+         * - Tapping bottom barcode dock opens Fullscreen Scanner Mode.
+         * - Touching inside portrait box (with photo) pans with 1 finger or pinch-zooms with 2 fingers,
+         *   while touching outside portrait box lets iPhone users scroll the page naturally!
+         */
+        let dragging = false, startX = 0, startY = 0, initX = 0, initY = 0;
+        let pinching = false, initialPinchDist = 0, initialPinchZoom = 1.0;
+        let tapCandidate = null;
+
+        function clientToCanvasCoords(clientX, clientY) {
+            const rect = passCanvas.getBoundingClientRect();
+            const scaleX = passCanvas.width / rect.width;
+            const scaleY = passCanvas.height / rect.height;
+            return {
+                cx: (clientX - rect.left) * scaleX,
+                cy: (clientY - rect.top) * scaleY,
+                scale: scaleX
+            };
+        }
+
+        function isInsidePortraitArea(cx, cy) {
+            if (state.photoMode === 'full_card_photo') {
+                return cy <= CARD_H;
+            }
+            return (
+                cx >= PORTRAIT_BOX.x &&
+                cx <= PORTRAIT_BOX.x + PORTRAIT_BOX.w &&
+                cy >= PORTRAIT_BOX.y &&
+                cy <= PORTRAIT_BOX.y + PORTRAIT_BOX.h
+            );
+        }
+
+        function isInsideBottomBarcodeDock(cx, cy) {
+            return state.barcodeMode !== 'card_only' && cy > CARD_H;
+        }
+
+        function startDrag(clientX, clientY) {
+            dragging = true;
+            startX = clientX;
+            startY = clientY;
+            initX = state.panX;
+            initY = state.panY;
+        }
+
+        function moveDrag(clientX, clientY) {
+            if (!dragging) return;
+            const rect = passCanvas.getBoundingClientRect();
+            const scale = passCanvas.width / rect.width;
+            state.panX = Math.max(-350, Math.min(350, initX + (clientX - startX) * scale));
+            state.panY = Math.max(-350, Math.min(350, initY + (clientY - startY) * scale));
+            syncSlidersUI();
+            renderPass();
+        }
+
+        passCanvas.addEventListener('mousedown', (e) => {
+            const { cx, cy } = clientToCanvasCoords(e.clientX, e.clientY);
+            tapCandidate = { clientX: e.clientX, clientY: e.clientY, cx, cy, time: Date.now() };
+            if (state.uploadedImage && isInsidePortraitArea(cx, cy)) {
+                startDrag(e.clientX, e.clientY);
+            }
+        });
+        window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', (e) => {
+            if (dragging) {
+                dragging = false;
+                saveStudentDataToStorage();
+            }
+            if (tapCandidate && Date.now() - tapCandidate.time < 280) {
+                const dist = Math.hypot(e.clientX - tapCandidate.clientX, e.clientY - tapCandidate.clientY);
+                if (dist < 8) {
+                    if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
+                        document.getElementById('photoUploadInput').click();
+                    } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
+                        openScannerModal();
+                    }
+                }
+            }
+            tapCandidate = null;
+        });
+
+        passCanvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2 && state.uploadedImage) {
+                dragging = false;
+                pinching = true;
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialPinchZoom = state.zoom;
+                return;
+            }
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                const { cx, cy } = clientToCanvasCoords(t.clientX, t.clientY);
+                tapCandidate = { clientX: t.clientX, clientY: t.clientY, cx, cy, time: Date.now() };
+                if (state.uploadedImage && isInsidePortraitArea(cx, cy)) {
+                    startDrag(t.clientX, t.clientY);
+                }
+            }
+        }, { passive: true });
+
+        passCanvas.addEventListener('touchmove', (e) => {
+            if (pinching && e.touches.length === 2 && state.uploadedImage) {
+                e.preventDefault();
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (initialPinchDist > 10) {
+                    const ratio = dist / initialPinchDist;
+                    state.zoom = Math.max(0.5, Math.min(2.8, Number((initialPinchZoom * ratio).toFixed(2))));
+                    syncSlidersUI();
+                    renderPass();
+                }
+                return;
+            }
+            if (e.touches.length === 1 && dragging) {
+                e.preventDefault();
+                moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', (e) => {
+            if (dragging || pinching) {
+                dragging = false;
+                pinching = false;
+                saveStudentDataToStorage();
+            }
+            if (tapCandidate && (!e.touches || e.touches.length === 0) && Date.now() - tapCandidate.time < 300) {
+                const changed = e.changedTouches && e.changedTouches[0];
+                const dist = changed ? Math.hypot(changed.clientX - tapCandidate.clientX, changed.clientY - tapCandidate.clientY) : 0;
+                if (dist < 12) {
+                    if (!state.uploadedImage && isInsidePortraitArea(tapCandidate.cx, tapCandidate.cy)) {
+                        document.getElementById('photoUploadInput').click();
+                    } else if (isInsideBottomBarcodeDock(tapCandidate.cx, tapCandidate.cy)) {
+                        openScannerModal();
+                    }
+                }
+            }
+            tapCandidate = null;
+        });
+
+        /**
+         * Native iPhone Share / Save Image (Web Share API Level 2 with PNG file fallback)
+         * On iPhone iOS Safari, navigator.share({ files }) opens the native iOS sheet with
+         * "Save Image" (directly to iPhone Photos / Camera Roll!), AirDrop, Messages, etc.
+         */
+        async function saveOrSharePassPNG(preferNativeShare = true) {
+            renderPass();
+            const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
+            const fileName = `WHS_Digital_ID_${safeLast}_${state.studentId || 'ID'}.png`;
+
+            const blob = await new Promise((resolve) => passCanvas.toBlob(resolve, 'image/png', 1.0));
+            if (!blob) return;
+
+            if (preferNativeShare && navigator.canShare && navigator.share) {
+                const file = new File([blob], fileName, { type: 'image/png' });
+                if (navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: `WHS Digital ID • ${state.firstName} ${state.lastName}`,
+                            text: `Whitney High School Student ID #${state.studentId}`,
+                            files: [file]
+                        });
+                        return;
+                    } catch (err) {
+                        if (err && err.name === 'AbortError') return;
+                    }
+                }
+            }
+
+            // Fallback direct download
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
+            showStatusToast('Saved high-res ID PNG!', false, 2200);
+        }
+
+        document.getElementById('downloadMainBtn').addEventListener('click', () => saveOrSharePassPNG(true));
+        document.getElementById('mobileBottomShareBtn').addEventListener('click', () => saveOrSharePassPNG(true));
+        document.getElementById('downloadTopBtn').addEventListener('click', () => saveOrSharePassPNG(false));
+        document.getElementById('modalDownloadBtn').addEventListener('click', () => saveOrSharePassPNG(true));
+        document.getElementById('shareWalletImageBtn').addEventListener('click', () => saveOrSharePassPNG(true));
+
+        /**
+         * Screen Wake Lock for iPhone Scanner Mode (prevents screen from dimming at scanner line)
+         */
+        async function requestScreenWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLockSentinel = await navigator.wakeLock.request('screen');
+                } catch (e) {}
+            }
+        }
+        async function releaseScreenWakeLock() {
+            if (wakeLockSentinel) {
+                try {
+                    await wakeLockSentinel.release();
+                } catch (e) {}
+                wakeLockSentinel = null;
+            }
+        }
+
+        // Fullscreen Scanner Dialog (<dialog> with top-layer modal & scroll containment)
+        const scannerModal = document.getElementById('scannerModal');
+        const fullscreenCardImg = document.getElementById('fullscreenCardImg');
+
+        function openScannerModal() {
+            renderPass();
+            fullscreenCardImg.src = passCanvas.toDataURL('image/png', 1.0);
+            document.getElementById('modalTopLabel').textContent = `WHS Barcode Scanner • ID #${state.studentId || '000000'}`;
+            if (typeof scannerModal.showModal === 'function') {
+                if (!scannerModal.open) scannerModal.showModal();
+            } else {
+                scannerModal.setAttribute('open', '');
+            }
+            requestScreenWakeLock();
+        }
+
+        function closeScannerModal() {
+            if (typeof scannerModal.close === 'function' && scannerModal.open) {
+                scannerModal.close();
+            } else {
+                scannerModal.removeAttribute('open');
+            }
+            releaseScreenWakeLock();
+        }
+
+        document.getElementById('fullscreenBtn').addEventListener('click', openScannerModal);
+        document.getElementById('mobileBottomScanBtn').addEventListener('click', openScannerModal);
+        document.getElementById('tapBarcodeHintBtn').addEventListener('click', openScannerModal);
+        document.getElementById('closeScannerModalBtn').addEventListener('click', closeScannerModal);
+        scannerModal.addEventListener('close', releaseScreenWakeLock);
+
+        // ============================================================================
+        // APPLE WALLET (.PKPASS) GENERATOR, PREVIEW & SIGNING ENGINE
+        // ============================================================================
+        const walletModal = document.getElementById('walletModal');
+        const walletPassInner = document.getElementById('walletPassInner');
+
+        function updateWalletModalPreview() {
+            const fullName = `${state.firstName || 'First'} ${state.lastName || 'Last'}`.trim();
+            const idVal = state.studentId || '000000';
+            const gradeVal = state.grade || '11';
+            const rawYear = (state.schoolYear || '26-27').trim();
+            const formattedYear = rawYear.length === 5 && rawYear.includes('-')
+                ? `20${rawYear.split('-')[0]}–20${rawYear.split('-')[1]}`
+                : rawYear;
+
+            const nameEl = document.getElementById('walletPreviewName');
+            const idEl = document.getElementById('walletPreviewId');
+            const gradeEl = document.getElementById('walletPreviewGrade');
+            const yearEl = document.getElementById('walletPreviewYear');
+            const altEl = document.getElementById('walletBarcodeAltText');
+
+            if (nameEl) nameEl.textContent = fullName;
+            if (idEl) idEl.textContent = idVal;
+            if (gradeEl) gradeEl.textContent = gradeVal;
+            if (yearEl) yearEl.textContent = formattedYear;
+            if (altEl) altEl.textContent = idVal;
+
+            // Render Mini Crest in Wallet Header
+            const miniCrest = document.getElementById('walletMiniCrestCanvas');
+            if (miniCrest) {
+                const mCtx = miniCrest.getContext('2d');
+                mCtx.clearRect(0, 0, miniCrest.width, miniCrest.height);
+                mCtx.fillStyle = '#1c232d';
+                mCtx.fillRect(0, 0, miniCrest.width, miniCrest.height);
+                drawDissectedWHSCrestOnContext(mCtx, 36, 4, 0.20);
+            }
+
+            // Render Student Thumbnail in Wallet Preview
+            const thumbCanvas = document.getElementById('walletThumbnailCanvas');
+            if (thumbCanvas) {
+                const tCtx = thumbCanvas.getContext('2d');
+                tCtx.clearRect(0, 0, thumbCanvas.width, thumbCanvas.height);
+                drawPortraitIntoRect(tCtx, 0, 0, thumbCanvas.width, thumbCanvas.height, false);
+            }
+
+            // Render Barcode Preview Image in Wallet Preview
+            const barcodeImg = document.getElementById('walletBarcodePreviewImg');
+            const srcBarcode = state.barcodeMode === 'code128'
+                ? document.getElementById('barcode128Canvas')
+                : document.getElementById('barcode39Canvas');
+            if (barcodeImg && srcBarcode && srcBarcode.width > 0) {
+                barcodeImg.src = srcBarcode.toDataURL('image/png');
+            }
+        }
+
+        function openWalletModal() {
+            if (scannerModal.open) closeScannerModal();
+            updateWalletModalPreview();
+            walletPassInner.classList.remove('is-flipped');
+            if (typeof walletModal.showModal === 'function') {
+                if (!walletModal.open) walletModal.showModal();
+            } else {
+                walletModal.setAttribute('open', '');
+            }
+            requestScreenWakeLock();
+        }
+
+        function closeWalletModal() {
+            if (typeof walletModal.close === 'function' && walletModal.open) {
+                walletModal.close();
+            } else {
+                walletModal.removeAttribute('open');
+            }
+            releaseScreenWakeLock();
+        }
+
+        document.getElementById('addToAppleWalletBtn').addEventListener('click', openWalletModal);
+        document.getElementById('headerWalletBtn').addEventListener('click', openWalletModal);
+        document.getElementById('mobileBottomWalletBtn').addEventListener('click', openWalletModal);
+        document.getElementById('modalWalletBtn').addEventListener('click', openWalletModal);
+        document.getElementById('closeWalletModalBtn').addEventListener('click', closeWalletModal);
+
+        document.getElementById('flipWalletPassBtn').addEventListener('click', () => {
+            walletPassInner.classList.toggle('is-flipped');
+        });
+        document.getElementById('flipBackToFrontBtn').addEventListener('click', () => {
+            walletPassInner.classList.remove('is-flipped');
+        });
+
+        // Light-dismiss when tapping outside the sheet card
+        document.getElementById('walletModalBackdropClick').addEventListener('click', (e) => {
+            if (e.target.id === 'walletModalBackdropClick') {
+                closeWalletModal();
+            }
+        });
+
+        document.getElementById('autoOpenWalletToggle').addEventListener('change', (e) => {
+            state.autoOpenWallet = e.target.checked;
+            saveStudentDataToStorage();
+            showStatusToast(
+                state.autoOpenWallet
+                    ? 'Wallet Pass will open automatically on launch!'
+                    : 'Auto-open on launch disabled',
+                false,
+                2200
+            );
+        });
+
+        /**
+         * Helper: Converts a canvas to a Uint8Array PNG buffer for .pkpass packaging.
+         */
+        async function canvasToUint8ArrayPNG(canvas) {
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
+            const buf = await blob.arrayBuffer();
+            return new Uint8Array(buf);
+        }
+
+        /**
+         * Generates the WHS Crest Icon at arbitrary square resolution (29, 58, 87, 180).
+         */
+        function createWHSIconCanvas(size) {
+            const c = document.createElement('canvas');
+            c.width = size;
+            c.height = size;
+            const cCtx = c.getContext('2d');
+            cCtx.fillStyle = '#1c232d';
+            cCtx.fillRect(0, 0, size, size);
+
+            // Gold border ring
+            cCtx.strokeStyle = '#f5dc00';
+            cCtx.lineWidth = Math.max(2, size * 0.045);
+            cCtx.strokeRect(cCtx.lineWidth / 2, cCtx.lineWidth / 2, size - cCtx.lineWidth, size - cCtx.lineWidth);
+
+            const crestScale = (size * 0.78) / 330;
+            drawDissectedWHSCrestOnContext(cCtx, size / 2, size * 0.11, crestScale);
+            return c;
+        }
+
+        /**
+         * Generates the Apple Wallet Logo PNG (160x50, 320x100, 480x150).
+         */
+        function createWHSLogoCanvas(width, height) {
+            const c = document.createElement('canvas');
+            c.width = width;
+            c.height = height;
+            const cCtx = c.getContext('2d');
+            const scale = height / 50;
+
+            drawDissectedWHSCrestOnContext(cCtx, 24 * scale, 3 * scale, 0.135 * scale);
+
+            cCtx.fillStyle = '#f5dc00';
+            cCtx.font = `900 ${Math.round(15 * scale)}px Inter, Arial, sans-serif`;
+            cCtx.textAlign = 'left';
+            cCtx.fillText('WHITNEY HIGH', 50 * scale, 22 * scale);
+
+            cCtx.fillStyle = '#ffffff';
+            cCtx.font = `700 ${Math.round(11.5 * scale)}px Inter, Arial, sans-serif`;
+            cCtx.fillText('STUDENT ID CARD', 50 * scale, 38 * scale);
+            return c;
+        }
+
+        /**
+         * Generates the Apple Wallet Thumbnail PNG (Student Portrait in WHS Gold Frame).
+         */
+        function createWHSThumbnailCanvas(width, height) {
+            const c = document.createElement('canvas');
+            c.width = width;
+            c.height = height;
+            const cCtx = c.getContext('2d');
+            const pad = Math.max(3, Math.round(width * 0.04));
+
+            drawPortraitIntoRect(cCtx, pad, pad, width - pad * 2, height - pad * 2, false);
+
+            cCtx.strokeStyle = '#f5dc00';
+            cCtx.lineWidth = pad;
+            cCtx.strokeRect(pad / 2, pad / 2, width - pad, height - pad);
+            return c;
+        }
+
+        /**
+         * Computes SHA-1 hex digest of a Uint8Array using WebCrypto (with forge fallback).
+         */
+        async function sha1Hex(uint8Bytes) {
+            if (window.crypto && window.crypto.subtle) {
+                const hashBuffer = await window.crypto.subtle.digest('SHA-1', uint8Bytes);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+            }
+            if (window.forge) {
+                const md = window.forge.md.sha1.create();
+                let binStr = '';
+                for (let i = 0; i < uint8Bytes.length; i++) {
+                    binStr += String.fromCharCode(uint8Bytes[i]);
+                }
+                md.update(binStr);
+                return md.digest().toHex();
+            }
+            return '';
+        }
+
+        /**
+         * Creates a detached PKCS#7 DER signature of manifestJsonBytes if PEM certificate & key are provided.
+         */
+        function createDetachedPkcs7Signature(manifestJsonString, certPem, keyPem) {
+            if (!window.forge || !certPem || !keyPem) return null;
+            try {
+                const cert = window.forge.pki.certificateFromPem(certPem);
+                const privateKey = window.forge.pki.privateKeyFromPem(keyPem);
+
+                const p7 = window.forge.pkcs7.createSignedData();
+                p7.content = window.forge.util.createBuffer(manifestJsonString, 'utf8');
+                p7.addCertificate(cert);
+                p7.addSigner({
+                    key: privateKey,
+                    certificate: cert,
+                    digestAlgorithm: window.forge.pki.oids.sha1,
+                    authenticatedAttributes: [
+                        {
+                            type: window.forge.pki.oids.contentType,
+                            value: window.forge.pki.oids.data
+                        },
+                        {
+                            type: window.forge.pki.oids.messageDigest
+                        },
+                        {
+                            type: window.forge.pki.oids.signingTime,
+                            value: new Date()
+                        }
+                    ]
+                });
+                p7.sign({ detached: true });
+                const derBytes = window.forge.asn1.toDer(p7.toAsn1()).getBytes();
+                const out = new Uint8Array(derBytes.length);
+                for (let i = 0; i < derBytes.length; i++) {
+                    out[i] = derBytes.charCodeAt(i);
+                }
+                return out;
+            } catch (err) {
+                console.warn('PKCS#7 custom signing error:', err);
+                return null;
+            }
+        }
+
+        /**
+         * Builds a complete, spec-compliant Apple Wallet .pkpass archive (pass.json, retina icons,
+         * logos, student portrait thumbnail, SHA-1 manifest.json, and PKCS#7 signature if configured)
+         * and triggers download / iOS share.
+         */
+        async function buildAndDownloadAppleWalletPass() {
+            if (typeof window.JSZip === 'undefined') {
+                showStatusToast('JSZip library still loading. Please try again.', false, 3000);
+                return;
+            }
+
+            showStatusToast('Building Apple Wallet .pkpass bundle...', true);
+
+            try {
+                const passTypeId = (document.getElementById('passTypeIdInput')?.value || 'pass.edu.abcusd.whitneyhs.studentid').trim();
+                const teamId = (document.getElementById('teamIdInput')?.value || 'WHSWILDCAT').trim();
+                const fullName = `${state.firstName || 'Student'} ${state.lastName || ''}`.trim();
+                const idCode = getSanitizedBarcodeValue();
+                const rawYear = (state.schoolYear || '26-27').trim();
+                const fullYear = rawYear.length === 5 && rawYear.includes('-')
+                    ? `20${rawYear.split('-')[0]}-20${rawYear.split('-')[1]}`
+                    : rawYear;
+
+                const passJsonObj = {
+                    formatVersion: 1,
+                    passTypeIdentifier: passTypeId,
+                    serialNumber: `WHS-${idCode}-${rawYear}`,
+                    teamIdentifier: teamId,
+                    organizationName: 'Whitney High School',
+                    description: 'Whitney High School Student ID',
+                    logoText: 'Whitney High School',
+                    foregroundColor: 'rgb(255, 255, 255)',
+                    backgroundColor: 'rgb(28, 35, 45)',
+                    labelColor: 'rgb(245, 220, 0)',
+                    generic: {
+                        headerFields: [
+                            {
+                                key: 'grade',
+                                label: 'GRADE',
+                                value: String(state.grade || '11')
+                            }
+                        ],
+                        primaryFields: [
+                            {
+                                key: 'studentName',
+                                label: 'STUDENT NAME',
+                                value: fullName
+                            }
+                        ],
+                        secondaryFields: [
+                            {
+                                key: 'studentId',
+                                label: 'STUDENT ID',
+                                value: idCode
+                            },
+                            {
+                                key: 'schoolYear',
+                                label: 'SCHOOL YEAR',
+                                value: fullYear
+                            }
+                        ],
+                        auxiliaryFields: [
+                            {
+                                key: 'school',
+                                label: 'CAMPUS',
+                                value: 'Gretchen Whitney High School • Wildcats'
+                            }
+                        ],
+                        backFields: [
+                            {
+                                key: 'cardSpec',
+                                label: 'STUDENT ID SPECIFICATION',
+                                value: `Official Whitney High School Digital Student ID for ${fullName} (Grade ${state.grade}, ${fullYear}). Encodes 6-digit ID #${idCode}.`
+                            },
+                            {
+                                key: 'schoolAddress',
+                                label: 'SCHOOL CAMPUS',
+                                value: 'Gretchen Whitney High School\n16800 Shoemaker Ave, Cerritos, CA 90703\nABC Unified School District'
+                            }
+                        ]
+                    },
+                    barcode: {
+                        format: 'PKBarcodeFormatCode128',
+                        message: idCode,
+                        messageEncoding: 'iso-8859-1',
+                        altText: idCode
+                    },
+                    barcodes: [
+                        {
+                            format: 'PKBarcodeFormatCode128',
+                            message: idCode,
+                            messageEncoding: 'iso-8859-1',
+                            altText: idCode
+                        }
+                    ]
+                };
+
+                const passJsonString = JSON.stringify(passJsonObj, null, 2);
+                const passJsonBytes = new TextEncoder().encode(passJsonString);
+
+                // Generate 1x, 2x, 3x Retina PassKit images
+                const filesMap = {
+                    'pass.json': passJsonBytes,
+                    'icon.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(29)),
+                    'icon@2x.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(58)),
+                    'icon@3x.png': await canvasToUint8ArrayPNG(createWHSIconCanvas(87)),
+                    'logo.png': await canvasToUint8ArrayPNG(createWHSLogoCanvas(160, 50)),
+                    'logo@2x.png': await canvasToUint8ArrayPNG(createWHSLogoCanvas(320, 100)),
+                    'logo@3x.png': await canvasToUint8ArrayPNG(createWHSLogoCanvas(480, 150)),
+                    'thumbnail.png': await canvasToUint8ArrayPNG(createWHSThumbnailCanvas(90, 110)),
+                    'thumbnail@2x.png': await canvasToUint8ArrayPNG(createWHSThumbnailCanvas(180, 220)),
+                    'thumbnail@3x.png': await canvasToUint8ArrayPNG(createWHSThumbnailCanvas(270, 330))
+                };
+
+                // Build SHA-1 manifest.json
+                const manifestObj = {};
+                for (const [filename, fileBytes] of Object.entries(filesMap)) {
+                    manifestObj[filename] = await sha1Hex(fileBytes);
+                }
+                const manifestJsonString = JSON.stringify(manifestObj, null, 2);
+                const manifestJsonBytes = new TextEncoder().encode(manifestJsonString);
+
+                const zip = new window.JSZip();
+                for (const [filename, fileBytes] of Object.entries(filesMap)) {
+                    zip.file(filename, fileBytes);
+                }
+                zip.file('manifest.json', manifestJsonBytes);
+
+                // Optional in-browser PKCS#7 signature if user supplied PEM cert & key
+                const certPem = (document.getElementById('signerCertPem')?.value || '').trim();
+                const keyPem = (document.getElementById('signerKeyPem')?.value || '').trim();
+                if (certPem && keyPem) {
+                    const sigBytes = createDetachedPkcs7Signature(manifestJsonString, certPem, keyPem);
+                    if (sigBytes) {
+                        zip.file('signature', sigBytes);
+                    }
+                }
+
+                const pkpassBlob = await zip.generateAsync({
+                    type: 'blob',
+                    mimeType: 'application/vnd.apple.pkpass',
+                    compression: 'DEFLATE'
+                });
+
+                const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
+                const pkpassFilename = `WHS_ID_${safeLast}_${idCode}.pkpass`;
+
+                // On iPhone, try sharing the .pkpass file so the user can open directly in Wallet / Pass2U / Files
+                if (navigator.canShare && navigator.share) {
+                    const pkpassFile = new File([pkpassBlob], pkpassFilename, {
+                        type: 'application/vnd.apple.pkpass'
+                    });
+                    if (navigator.canShare({ files: [pkpassFile] })) {
+                        try {
+                            hideStatusToast();
+                            await navigator.share({
+                                title: `WHS Student ID Pass (${fullName})`,
+                                files: [pkpassFile]
+                            });
+                            return;
+                        } catch (shareErr) {
+                            if (shareErr && shareErr.name === 'AbortError') return;
+                        }
+                    }
+                }
+
+                // Direct .pkpass download
+                const downloadUrl = URL.createObjectURL(pkpassBlob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = pkpassFilename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
+
+                showStatusToast(`Generated ${pkpassFilename}!`, false, 3000);
+            } catch (err) {
+                console.error('Error generating .pkpass:', err);
+                showStatusToast('Error building .pkpass file.', false, 3000);
+            }
+        }
+
+        document.getElementById('downloadPkpassBtn').addEventListener('click', buildAndDownloadAppleWalletPass);
+
+        document.getElementById('openPass2UBtn').addEventListener('click', async () => {
+            await buildAndDownloadAppleWalletPass();
+        });
+
+        /**
+         * Generates dynamic iPhone Home Screen Icon (apple-touch-icon) and Web App Manifest
+         * so "Add to Home Screen" on iPhone installs a full-screen WHS Digital ID app.
+         */
+        function initIPhoneWebAppAssets() {
+            try {
+                const iconCanvas = createWHSIconCanvas(180);
+                const iconDataUrl = iconCanvas.toDataURL('image/png');
+                const touchIconLink = document.getElementById('appleTouchIconLink');
+                if (touchIconLink) touchIconLink.href = iconDataUrl;
+
+                const manifest = {
+                    name: 'Whitney High School Digital ID',
+                    short_name: 'WHS ID',
+                    description: 'Whitney High School Student ID & Apple Wallet Pass',
+                    start_url: './',
+                    display: 'standalone',
+                    background_color: '#0d131d',
+                    theme_color: '#0d131d',
+                    orientation: 'portrait',
+                    icons: [
+                        {
+                            src: iconDataUrl,
+                            sizes: '180x180',
+                            type: 'image/png',
+                            purpose: 'any maskable'
+                        }
+                    ]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                const manifestUrl = URL.createObjectURL(manifestBlob);
+                const manifestLink = document.getElementById('manifestLink');
+                if (manifestLink) manifestLink.href = manifestUrl;
+            } catch (e) {}
+        }
+
+        // Boot
+        window.addEventListener('DOMContentLoaded', () => {
+            initIPhoneWebAppAssets();
+            updateBarcodes();
+            initAutoLoad();
+
+            // If user enabled "Auto-open pass on iPhone launch" (or launched as standalone Home Screen Web App)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (state.autoOpenWallet || isStandalone) {
+                setTimeout(() => openWalletModal(), 250);
+            }
+        });
+    </script>
+</body>
+</html>
