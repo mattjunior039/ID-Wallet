@@ -2553,36 +2553,36 @@
             const sCtx = c.getContext('2d');
             const scale = width / 1125;
 
-            // 1. Deep navy card background matching the real Whitney ID
+            // 1. Deep modern card background matching Apple Wallet (#1c232d)
             sCtx.fillStyle = '#1c232d';
             sCtx.fillRect(0, 0, width, height);
 
-            // Subtle gold scratch accents
+            // Subtle athletic gold scratch accents matching the authentic card
             sCtx.save();
-            sCtx.strokeStyle = 'rgba(245, 220, 0, 0.08)';
+            sCtx.strokeStyle = 'rgba(245, 220, 0, 0.07)';
             sCtx.lineWidth = 14 * scale;
             sCtx.lineCap = 'round';
             sCtx.beginPath();
-            sCtx.moveTo(350 * scale, -20 * scale);
-            sCtx.lineTo(290 * scale, 450 * scale);
+            sCtx.moveTo(420 * scale, -20 * scale);
+            sCtx.lineTo(360 * scale, 450 * scale);
             sCtx.stroke();
             sCtx.beginPath();
-            sCtx.moveTo(410 * scale, -20 * scale);
-            sCtx.lineTo(350 * scale, 450 * scale);
+            sCtx.moveTo(480 * scale, -20 * scale);
+            sCtx.lineTo(420 * scale, 450 * scale);
             sCtx.stroke();
             sCtx.beginPath();
-            sCtx.moveTo(470 * scale, -20 * scale);
-            sCtx.lineTo(410 * scale, 450 * scale);
+            sCtx.moveTo(540 * scale, -20 * scale);
+            sCtx.lineTo(480 * scale, 450 * scale);
             sCtx.stroke();
             sCtx.restore();
 
             // 2. Bold Golden-Yellow Vertical Brand Strip on the left
-            const stripW = Math.round(112 * scale);
+            const stripW = Math.round(116 * scale);
             sCtx.fillStyle = '#f5dc00';
             sCtx.fillRect(0, 0, stripW, height);
 
             sCtx.save();
-            sCtx.translate(stripW * 0.72, height / 2);
+            sCtx.translate(stripW * 0.70, height / 2);
             sCtx.rotate(-Math.PI / 2);
             sCtx.fillStyle = '#1c232d';
             sCtx.font = `800 ${Math.round(28 * scale)}px Arial, "Helvetica Neue", Inter, sans-serif`;
@@ -2596,97 +2596,94 @@
             sCtx.fillText(schoolTitle, 0, 0);
             sCtx.restore();
 
-            // 3. Official Whitney High School Crest
-            const crestX = stripW + 90 * scale;
-            const crestY = 56 * scale;
-            drawDissectedWHSCrestOnContext(sCtx, crestX, crestY, 0.42 * scale);
+            // 3. Student Portrait Photo with Official Yellow Frame (Prominent on left)
+            const portH = Math.round(360 * scale);
+            const portW = Math.round(270 * scale); // 3:4 portrait aspect ratio
+            const portX = stripW + Math.round(24 * scale);
+            const portY = Math.round((height - portH) / 2);
 
-            // 4. Right side: Portrait Photo and Vertical Barcode
-            const barW = Math.round(76 * scale);
-            const barH = Math.round(330 * scale);
-            const barX = width - barW - 24 * scale;
-            const barY = (height - barH) / 2;
-
-            // Vertical barcode white container
-            sCtx.fillStyle = '#ffffff';
-            sCtx.fillRect(barX, barY, barW, barH);
-
-            const cardSideBarcode = document.getElementById('barcode39Canvas');
-            const hasStudentId = Boolean(getSanitizedBarcodeValue());
-            if (hasStudentId && cardSideBarcode && cardSideBarcode.width > 0) {
-                sCtx.save();
-                sCtx.translate(barX + barW / 2, barY + barH / 2);
-                sCtx.rotate(Math.PI / 2);
-                sCtx.imageSmoothingEnabled = false;
-                sCtx.drawImage(cardSideBarcode, -barH / 2 + 10 * scale, -barW / 2, barH - 20 * scale, barW);
-                sCtx.restore();
-            }
-
-            // Student Portrait Photo with Official Yellow Frame
-            const portW = Math.round(240 * scale);
-            const portH = Math.round(330 * scale);
-            const portX = barX - portW - 22 * scale;
-            const portY = barY;
-
+            // Draw student portrait
             drawPortraitIntoRect(sCtx, portX, portY, portW, portH, true);
 
+            // Gold frame around photo
             sCtx.strokeStyle = '#f5dc00';
             sCtx.lineWidth = Math.round(7 * scale);
             sCtx.strokeRect(portX, portY, portW, portH);
 
-            // 5. Center Information: School Year, Grade, Name, ID, Campus
-            const infoX = crestX + 105 * scale;
+            // 4. Center-Right Identity Section
+            const infoX = portX + portW + Math.round(34 * scale);
+
+            // Row A: Official Whitney High School Crest + Year & Grade Badges
+            const crestScale = 0.38 * scale;
+            const crestX = infoX + 36 * scale;
+            const crestY = 32 * scale;
+            drawDissectedWHSCrestOnContext(sCtx, crestX, crestY, crestScale);
 
             const rawYear = (state.schoolYear || '').trim();
-            const yearText = rawYear ? (rawYear.length === 5 && rawYear.includes('-') ? `20${rawYear.split('-')[0]}-20${rawYear.split('-')[1]}` : rawYear) : '';
+            const yearText = rawYear
+                ? (rawYear.length === 5 && rawYear.includes('-')
+                    ? `20${rawYear.split('-')[0]}-20${rawYear.split('-')[1]}`
+                    : rawYear)
+                : '';
             const gradeNum = (state.grade && String(state.grade).trim()) ? String(state.grade).trim() : '';
 
-            const metaY = 74 * scale;
+            const badgeX = crestX + 72 * scale;
+            const badgeY = 64 * scale;
+
             if (yearText) {
                 sCtx.fillStyle = '#f5dc00';
                 sCtx.font = `800 ${Math.round(24 * scale)}px Arial, sans-serif`;
                 sCtx.textAlign = 'left';
-                sCtx.fillText(yearText, infoX, metaY);
+                sCtx.fillText(yearText, badgeX, badgeY);
             }
 
             if (gradeNum) {
                 const gradeLabel = `GRADE ${gradeNum}`;
-                const gBoxX = infoX + (yearText ? sCtx.measureText(yearText).width + 18 * scale : 0);
+                const gBoxX = badgeX + (yearText ? sCtx.measureText(yearText).width + 16 * scale : 0);
                 const gBoxW = 120 * scale;
-                const gBoxH = 34 * scale;
+                const gBoxH = 32 * scale;
 
                 sCtx.fillStyle = '#f5dc00';
-                roundRectPath(sCtx, gBoxX, metaY - 26 * scale, gBoxW, gBoxH, 6 * scale);
+                roundRectPath(sCtx, gBoxX, badgeY - 24 * scale, gBoxW, gBoxH, 6 * scale);
                 sCtx.fill();
 
                 sCtx.fillStyle = '#1c232d';
-                sCtx.font = `900 ${Math.round(20 * scale)}px Arial, sans-serif`;
+                sCtx.font = `900 ${Math.round(19 * scale)}px Arial, sans-serif`;
                 sCtx.textAlign = 'center';
-                sCtx.fillText(gradeLabel, gBoxX + gBoxW / 2, metaY - 2 * scale);
+                sCtx.fillText(gradeLabel, gBoxX + gBoxW / 2, badgeY - 2 * scale);
             }
 
-            // Student Full Name
+            // Row B: Student Full Name
             sCtx.textAlign = 'left';
             const first = (state.firstName || '').trim();
             const last = (state.lastName || '').trim();
             const fullName = `${first} ${last}`.trim() || 'STUDENT NAME';
 
             sCtx.fillStyle = '#ffffff';
-            sCtx.font = `800 ${Math.round(38 * scale)}px Arial, "Helvetica Neue", sans-serif`;
-            sCtx.fillText(fullName.toUpperCase(), infoX, 168 * scale);
+            sCtx.font = `800 ${Math.round(44 * scale)}px Arial, "Helvetica Neue", sans-serif`;
+            const maxNameW = (width - infoX - 24 * scale);
+            const nameMetrics = sCtx.measureText(fullName.toUpperCase());
+            if (nameMetrics.width > maxNameW && maxNameW > 50) {
+                sCtx.font = `800 ${Math.round(44 * scale * (maxNameW / nameMetrics.width))}px Arial, sans-serif`;
+            }
+            sCtx.fillText(fullName.toUpperCase(), infoX, 192 * scale);
 
-            // 6-digit Student ID
+            // Row C: 6-digit Student ID
             const idVal = (state.studentId || '').trim();
             if (idVal) {
                 sCtx.fillStyle = '#f5dc00';
-                sCtx.font = `800 ${Math.round(30 * scale)}px "JetBrains Mono", monospace`;
-                sCtx.fillText(`ID #${idVal}`, infoX, 222 * scale);
+                sCtx.font = `800 ${Math.round(32 * scale)}px "JetBrains Mono", monospace`;
+                sCtx.fillText(`STUDENT ID #${idVal}`, infoX, 252 * scale);
             }
 
-            // Campus subtext
+            // Row D: Official Campus Subtext
+            sCtx.fillStyle = '#cbd5e1';
+            sCtx.font = `700 ${Math.round(20 * scale)}px Inter, sans-serif`;
+            sCtx.fillText('GRETCHEN WHITNEY HIGH SCHOOL', infoX, 312 * scale);
+
             sCtx.fillStyle = '#94a3b8';
-            sCtx.font = `700 ${Math.round(18 * scale)}px Inter, sans-serif`;
-            sCtx.fillText('Whitney High School • Wildcats', infoX, 276 * scale);
+            sCtx.font = `600 ${Math.round(16 * scale)}px Inter, sans-serif`;
+            sCtx.fillText('Wildcats • ABC Unified School District • Cerritos, CA', infoX, 348 * scale);
 
             return c;
         }
@@ -2714,23 +2711,13 @@
             return c;
         }
 
-        function createWHSLogoCanvas(width, height) {
+        function createWHSLogoCanvas(width = 120, height = 120) {
             const c = document.createElement('canvas');
             c.width = width;
             c.height = height;
             const cCtx = c.getContext('2d');
-            const scale = height / 50;
-
-            drawDissectedWHSCrestOnContext(cCtx, 24 * scale, 3 * scale, 0.135 * scale);
-
-            cCtx.fillStyle = '#f5dc00';
-            cCtx.font = `900 ${Math.round(15 * scale)}px Inter, Arial, sans-serif`;
-            cCtx.textAlign = 'left';
-            cCtx.fillText('WHITNEY HIGH', 50 * scale, 22 * scale);
-
-            cCtx.fillStyle = '#ffffff';
-            cCtx.font = `700 ${Math.round(11.5 * scale)}px Inter, Arial, sans-serif`;
-            cCtx.fillText('STUDENT ID CARD', 50 * scale, 38 * scale);
+            const scale = (height * 0.88) / 330;
+            drawDissectedWHSCrestOnContext(cCtx, width / 2, height * 0.06, scale);
             return c;
         }
 
@@ -2813,8 +2800,8 @@
                 const stripCanvas = createWHSWalletStripCanvas(750, 288);
                 const stripDataUrl = stripCanvas.toDataURL('image/png');
 
-                // 2. Generate logo and icon images
-                const logoCanvas = createWHSLogoCanvas(160, 50);
+                // 2. Generate crisp crest logo and icon images
+                const logoCanvas = createWHSLogoCanvas(120, 120);
                 const logoDataUrl = logoCanvas.toDataURL('image/png');
 
                 const iconCanvas = createWHSIconCanvas(180);
@@ -2835,19 +2822,15 @@
                     foregroundColor: '#ffffff',
                     backgroundColor: '#1c232d',
                     labelColor: '#f5dc00',
-                    primaryFields: [
-                        { key: 'studentName', label: 'STUDENT NAME', value: fullName }
-                    ],
+                    primaryFields: [], // Clean strip: Apple Wallet will NOT stamp huge text over the card artwork!
                     secondaryFields: [
+                        { key: 'studentName', label: 'STUDENT NAME', value: fullName },
                         { key: 'studentId', label: 'STUDENT ID', value: idCode },
                         { key: 'schoolYear', label: 'YEAR', value: fullYear || '—' }
                     ],
                     headerFields: gradeNum ? [
-                        { key: 'grade', label: 'GRADE', value: `GRADE ${gradeNum}` }
+                        { key: 'grade', label: 'GRADE', value: String(gradeNum) }
                     ] : [],
-                    auxiliaryFields: [
-                        { key: 'campus', label: 'CAMPUS', value: 'Wildcats • Cerritos, CA' }
-                    ],
                     backFields: [
                         {
                             key: 'cardSpec',
@@ -2953,18 +2936,14 @@
                     backgroundColor: 'rgb(28, 35, 45)',
                     labelColor: 'rgb(245, 220, 0)',
                     storeCard: {
-                        headerFields: [
-                            { key: 'grade', label: 'GRADE', value: String(state.grade || '—') }
-                        ],
-                        primaryFields: [
-                            { key: 'studentName', label: 'STUDENT NAME', value: fullName }
-                        ],
+                        headerFields: state.grade ? [
+                            { key: 'grade', label: 'GRADE', value: String(state.grade) }
+                        ] : [],
+                        primaryFields: [],
                         secondaryFields: [
+                            { key: 'studentName', label: 'STUDENT NAME', value: fullName },
                             { key: 'studentId', label: 'STUDENT ID', value: idCode },
                             { key: 'schoolYear', label: 'YEAR', value: fullYear || '—' }
-                        ],
-                        auxiliaryFields: [
-                            { key: 'campus', label: 'CAMPUS', value: 'Wildcats • Cerritos, CA' }
                         ],
                         backFields: [
                             {
