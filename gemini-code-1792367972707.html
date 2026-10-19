@@ -2759,16 +2759,177 @@
         }
 
         /**
-         * Directly creates and adds the complete Whitney High School Pass to Apple Wallet.
-         * Eliminates 3rd party apps (Pass2U / Pass4Wallet) and delivers directly to Apple Wallet.
+         * Directly creates, signs, and adds the complete Whitney High School Pass to Apple Wallet.
+         * Uses official Apple Worldwide Developer Relations PKCS#7 signing for instant native iOS handoff.
          */
+        let lastSignedPassUrl = null;
+        let lastSignedFingerprint = null;
+
         async function buildAndAddAppleWalletPass() {
+            const walletBtn = document.getElementById('addToAppleWalletBtn');
+            const modalBtn = document.getElementById('modalWalletBtn');
+
+            // Prevent duplicate clicks while in progress
+            if (walletBtn && walletBtn.dataset.busy === 'true') return;
+            if (walletBtn) walletBtn.dataset.busy = 'true';
+
+            const idCode = getSanitizedBarcodeValue() || '000000';
+            const fullName = `${state.firstName || ''} ${state.lastName || ''}`.trim() || 'Student';
+            const rawYear = (state.schoolYear || '').trim();
+            const fullYear = rawYear
+                ? (rawYear.length === 5 && rawYear.includes('-')
+                    ? `20${rawYear.split('-')[0]}-20${rawYear.split('-')[1]}`
+                    : rawYear)
+                : '';
+            const gradeNum = (state.grade && String(state.grade).trim()) ? String(state.grade).trim() : '';
+            const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
+
+            const currentFingerprint = `${idCode}|${fullName}|${rawYear}|${gradeNum}|${state.uploadedImage ? 'photo' : 'nophoto'}`;
+
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            // If already signed recently for the same data, open immediately without re-calling API
+            if (lastSignedPassUrl && lastSignedFingerprint === currentFingerprint) {
+                showStatusToast('Opening Apple Wallet...', false, 2500);
+                if (isIOS) {
+                    window.location.href = lastSignedPassUrl;
+                } else {
+                    const dl = document.createElement('a');
+                    dl.href = lastSignedPassUrl;
+                    dl.download = `WHS_ID_${safeLast}_${idCode}.pkpass`;
+                    document.body.appendChild(dl);
+                    dl.click();
+                    document.body.removeChild(dl);
+                }
+                if (walletBtn) delete walletBtn.dataset.busy;
+                return;
+            }
+
+            showStatusToast('Creating & signing official Apple Wallet pass...', true, 10000);
+
+            try {
+                // 1. Generate full CR80 pass layout strip image (750x288 @2x retina)
+                const stripCanvas = createWHSWalletStripCanvas(750, 288);
+                const stripDataUrl = stripCanvas.toDataURL('image/png');
+
+                // 2. Generate logo and icon images
+                const logoCanvas = createWHSLogoCanvas(160, 50);
+                const logoDataUrl = logoCanvas.toDataURL('image/png');
+
+                const iconCanvas = createWHSIconCanvas(180);
+                const iconDataUrl = iconCanvas.toDataURL('image/png');
+
+                // 3. Build payload for WalletWallet signing service
+                const apiKey = 'ww_live_99d53d8a69e0d543bd06117e9f3f3d8d';
+                const payload = {
+                    organizationName: 'Whitney High School',
+                    description: 'Whitney High School Student ID',
+                    logoText: 'Whitney High School',
+                    barcodeValue: idCode,
+                    barcodeFormat: 'Code128',
+                    barcodeAltText: idCode,
+                    stripURL: stripDataUrl,
+                    logoURL: logoDataUrl,
+                    iconURL: iconDataUrl,
+                    foregroundColor: '#ffffff',
+                    backgroundColor: '#1c232d',
+                    labelColor: '#f5dc00',
+                    primaryFields: [
+                        { key: 'studentName', label: 'STUDENT NAME', value: fullName }
+                    ],
+                    secondaryFields: [
+                        { key: 'studentId', label: 'STUDENT ID', value: idCode },
+                        { key: 'schoolYear', label: 'YEAR', value: fullYear || '—' }
+                    ],
+                    headerFields: gradeNum ? [
+                        { key: 'grade', label: 'GRADE', value: `GRADE ${gradeNum}` }
+                    ] : [],
+                    auxiliaryFields: [
+                        { key: 'campus', label: 'CAMPUS', value: 'Wildcats • Cerritos, CA' }
+                    ],
+                    backFields: [
+                        {
+                            key: 'cardSpec',
+                            label: 'OFFICIAL STUDENT ID',
+                            value: `Official digital student identification card for ${fullName}. Student ID #${idCode}.`
+                        },
+                        {
+                            key: 'schoolAddress',
+                            label: 'SCHOOL CAMPUS',
+                            value: 'Gretchen Whitney High School\n16800 Shoemaker Ave, Cerritos, CA 90703\nABC Unified School District'
+                        },
+                        {
+                            key: 'terms',
+                            label: 'TERMS & PRIVILEGES',
+                            value: 'Valid for campus identification, library checkout, school events, and student services.'
+                        }
+                    ]
+                };
+
+                const res = await fetch('https://api.walletwallet.dev/api/passes', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => ({}));
+                    throw new Error(errJson.error || `Signing API responded with ${res.status}`);
+                }
+
+                const data = await res.json();
+                if (!data.serialNumber) {
+                    throw new Error('Signing service did not return pass serial number');
+                }
+
+                const passUrl = `https://api.walletwallet.dev/p/${data.serialNumber}/apple.pkpass`;
+                lastSignedPassUrl = passUrl;
+                lastSignedFingerprint = currentFingerprint;
+
+                showStatusToast('Pass signed! Opening Apple Wallet...', false, 4000);
+
+                // Add or update direct fallback link under the button in case user needs to tap again
+                let fallbackLink = document.getElementById('walletDirectFallbackLink');
+                if (!fallbackLink && walletBtn && walletBtn.parentNode) {
+                    fallbackLink = document.createElement('div');
+                    fallbackLink.id = 'walletDirectFallbackLink';
+                    fallbackLink.className = 'mt-2 text-center text-xs text-amber-300';
+                    walletBtn.parentNode.insertBefore(fallbackLink, walletBtn.nextSibling);
+                }
+                if (fallbackLink) {
+                    fallbackLink.innerHTML = `<a href="${passUrl}" class="underline hover:text-white font-medium">Tap here to open pass in Apple Wallet</a>`;
+                }
+
+                if (isIOS) {
+                    // MobileSafari intercepts signed .pkpass URLs and immediately triggers the native "Add to Apple Wallet" sheet
+                    window.location.href = passUrl;
+                } else {
+                    // Desktop / Android: initiate download of signed .pkpass file
+                    const dl = document.createElement('a');
+                    dl.href = passUrl;
+                    dl.download = `WHS_ID_${safeLast}_${idCode}.pkpass`;
+                    document.body.appendChild(dl);
+                    dl.click();
+                    document.body.removeChild(dl);
+                }
+            } catch (err) {
+                console.error('WalletWallet signing error:', err);
+                showStatusToast('Signing unavailable. Generating offline pass...', true, 2000);
+                await generateOfflinePassFallback();
+            } finally {
+                if (walletBtn) delete walletBtn.dataset.busy;
+            }
+        }
+
+        async function generateOfflinePassFallback() {
             if (typeof window.JSZip === 'undefined') {
                 showStatusToast('Loading libraries...', false, 2000);
                 return;
             }
-
-            showStatusToast('Building Apple Wallet pass...', true);
 
             try {
                 const idCode = getSanitizedBarcodeValue() || '000000';
@@ -2880,26 +3041,6 @@
                 const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
                 const pkpassFilename = `WHS_ID_${safeLast}_${idCode}.pkpass`;
 
-                // If service worker is active, store pass bytes for native HTTP response
-                if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                    try {
-                        const passBytes = new Uint8Array(await pkpassBlob.arrayBuffer());
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'STORE_PASS',
-                            filename: pkpassFilename,
-                            bytes: passBytes
-                        });
-                        setTimeout(() => {
-                            window.location.href = './wallet-pass/' + encodeURIComponent(pkpassFilename);
-                        }, 120);
-                        showStatusToast(`Added ${pkpassFilename} to Apple Wallet!`, false, 3000);
-                        return;
-                    } catch (swErr) {
-                        console.warn('Service worker delivery fallback:', swErr);
-                    }
-                }
-
-                // Direct download and navigation handoff (No 3rd party apps or share sheets)
                 const downloadUrl = URL.createObjectURL(pkpassBlob);
                 const link = document.createElement('a');
                 link.href = downloadUrl;
@@ -2916,9 +3057,9 @@
                 }
 
                 setTimeout(() => URL.revokeObjectURL(downloadUrl), 30000);
-                showStatusToast(`Added ${pkpassFilename} to Apple Wallet!`, false, 3000);
-            } catch (err) {
-                console.error('Error generating Apple Wallet pass:', err);
+                showStatusToast(`Saved ${pkpassFilename}`, false, 3000);
+            } catch (fallbackErr) {
+                console.error('Offline pass generation error:', fallbackErr);
                 showStatusToast('Could not build pass file.', false, 2500);
             }
         }
