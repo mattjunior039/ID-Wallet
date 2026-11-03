@@ -172,10 +172,28 @@
                 <canvas id="passCanvas" width="882" height="1780" style="aspect-ratio: 882 / 1780;" class="w-full h-auto rounded-[18px] block bg-[#1c232d] cursor-grab active:cursor-grabbing select-none"></canvas>
             </div>
 
-            <!-- Helpful Drag / Scan Hint -->
-            <div class="mt-2 flex items-center justify-between w-full px-1 text-[11px] text-slate-400">
-                <span class="flex items-center gap-1"><i data-lucide="move" class="w-3 h-3 text-[#f5dc00]"></i> Drag portrait to adjust</span>
-                <button id="tapScanHintBtn" type="button" class="text-[#f5dc00] hover:underline font-semibold">Full-screen barcode</button>
+            <!-- Helpful Drag / Crop / Scan Controls -->
+            <div class="mt-2 flex items-center justify-between w-full px-1 text-[11px] text-slate-400 gap-1">
+                <span class="flex items-center gap-1 truncate"><i data-lucide="move" class="w-3 h-3 text-[#f5dc00] shrink-0"></i> Drag or pinch photo</span>
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button id="openCropModalBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[#f5dc00]/15 border border-[#f5dc00]/50 text-[#f5dc00] hover:bg-[#f5dc00] hover:text-slate-950 font-bold flex items-center gap-1 transition">
+                        <i data-lucide="crop" class="w-3 h-3"></i>
+                        <span>Crop / Resize Photo</span>
+                    </button>
+                    <button id="tapScanHintBtn" type="button" class="text-slate-300 hover:text-[#f5dc00] hover:underline font-semibold">Full Barcode</button>
+                </div>
+            </div>
+
+            <!-- Quick Middle Portrait Resize Bar (Appears once a photo is loaded) -->
+            <div id="quickResizeBar" class="hidden w-full mt-2 px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-800 items-center gap-2 text-xs">
+                <span class="text-[11px] font-bold text-slate-300 shrink-0">Photo Size</span>
+                <button id="quickZoomOutBtn" type="button" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0" title="Zoom Out">−</button>
+                <input id="quickZoomSlider" type="range" min="0.3" max="3.0" step="0.01" value="1.0" class="flex-1" aria-label="Middle photo size">
+                <button id="quickZoomInBtn" type="button" class="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0" title="Zoom In">+</button>
+                <span id="quickZoomLabel" class="mono-font text-[11px] text-[#f5dc00] font-bold w-10 text-right shrink-0">100%</span>
+                <button id="quickPickCropBtn" type="button" class="px-2 py-1 rounded-lg bg-[#f5dc00] text-slate-950 font-extrabold text-[11px] shrink-0 hover:bg-yellow-300 transition">
+                    Pick Crop
+                </button>
             </div>
 
             <!-- Primary Actions (Ultra-Simplified) -->
@@ -242,18 +260,24 @@
                 </div>
 
                 <!-- Auto-Fill Status Banner (Appears after camera scan / photo load) -->
-                <div id="detectedCardPreviewBar" class="hidden items-center justify-between p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+                <div id="detectedCardPreviewBar" class="hidden items-center justify-between p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 gap-2">
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <canvas id="detectedPortraitThumbCanvas" width="90" height="114" class="w-8 h-10 rounded-lg border border-[#f5dc00] bg-[#4aa8d8] shrink-0 object-cover"></canvas>
+                        <canvas id="detectedPortraitThumbCanvas" width="90" height="114" title="Click to crop &amp; resize photo" class="w-8 h-10 rounded-lg border border-[#f5dc00] bg-[#4aa8d8] shrink-0 object-cover cursor-pointer hover:opacity-80 transition"></canvas>
                         <div class="min-w-0">
                             <div class="text-xs font-bold text-emerald-300 flex items-center gap-1">
-                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                                <span>Auto-filled from ID Photo</span>
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5 shrink-0"></i>
+                                <span class="truncate">Auto-filled from ID Photo</span>
                             </div>
-                            <div id="ocrStatusLabel" class="text-[10px] text-slate-400 truncate">Card aligned & details extracted</div>
+                            <div id="ocrStatusLabel" class="text-[10px] text-slate-400 truncate">Card aligned &amp; details extracted</div>
                         </div>
                     </div>
-                    <span id="detectedPoseBadge" class="hidden shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">Aligned</span>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button id="bannerCropBtn" type="button" class="px-2.5 py-1 rounded-lg bg-[#f5dc00] text-slate-950 font-extrabold text-[11px] flex items-center gap-1 hover:bg-yellow-300 transition">
+                            <i data-lucide="crop" class="w-3 h-3"></i>
+                            <span>Crop Photo</span>
+                        </button>
+                        <span id="detectedPoseBadge" class="hidden shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">Aligned</span>
+                    </div>
                 </div>
 
                 <div class="space-y-3">
@@ -294,38 +318,71 @@
                 </div>
             </section>
 
-            <!-- TAB 2: Photo Upload & Adjustment -->
+            <!-- TAB 2: Photo Upload, Visual Crop Picker & Resize -->
             <section id="tabPhotoSection" class="hidden p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800/90 space-y-3.5">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Photo Alignment</span>
-                    <button id="resetCropBtn" type="button" class="text-[11px] font-semibold text-slate-300 hover:text-white">
-                        Reset Zoom &amp; Pan
-                    </button>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pick Crop &amp; Resize Photo</span>
+                    <div class="flex items-center gap-2">
+                        <button id="expandCropModalBtn" type="button" class="px-2 py-1 rounded-lg bg-[#f5dc00]/15 border border-[#f5dc00]/40 text-[#f5dc00] hover:bg-[#f5dc00] hover:text-slate-950 font-bold text-[11px] flex items-center gap-1 transition">
+                            <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                            <span>Full Screen Crop</span>
+                        </button>
+                        <button id="resetCropBtn" type="button" class="text-[11px] font-semibold text-slate-300 hover:text-white">
+                            Reset Crop
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Photo Mode Selector (Selfie vs Extract from ID card) -->
                 <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-bold">
                     <button type="button" data-photomode="extract_from_id" class="photo-mode-btn py-2 rounded-lg transition bg-[#f5dc00] text-slate-950 shadow">
-                        Extract from ID Photo
+                        Aligned ID Card
                     </button>
                     <button type="button" data-photomode="portrait_fill" class="photo-mode-btn py-2 rounded-lg transition text-slate-400 hover:text-white">
-                        Regular Portrait / Selfie
+                        Full Original Photo
                     </button>
+                </div>
+
+                <!-- Interactive Visual Crop Box Picker -->
+                <div class="rounded-2xl bg-slate-950 border border-slate-800 p-2.5 space-y-2">
+                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                        <span class="flex items-center gap-1">
+                            <i data-lucide="crop" class="w-3.5 h-3.5 text-[#f5dc00]"></i>
+                            <span>Drag yellow box or corners/sides to pick middle crop</span>
+                        </span>
+                    </div>
+                    <div class="relative w-full overflow-hidden rounded-xl bg-[#090d14] border border-slate-800/80 flex items-center justify-center">
+                        <canvas id="inlineCropCanvas" width="560" height="420" style="aspect-ratio: 4 / 3; touch-action: none;" class="w-full h-auto block select-none cursor-crosshair"></canvas>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-0.5">
+                        <button id="toggleAspectLockBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-[#f5dc00]/15 border border-[#f5dc00] text-[#f5dc00] text-[11px] font-bold flex items-center gap-1.5 transition">
+                            <i data-lucide="lock" class="w-3 h-3"></i>
+                            <span id="aspectLockBtnText">Lock Portrait Ratio: ON</span>
+                        </button>
+                        <button id="rotate90Btn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-bold flex items-center gap-1 transition">
+                            <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+                            <span>Rotate 90°</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Sliders -->
                 <div class="space-y-2.5 pt-1">
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <label for="zoomSlider" class="text-slate-400">Zoom</label>
+                            <label for="zoomSlider" class="text-slate-400">Middle Photo Scale / Resize</label>
                             <span id="zoomLabel" class="mono-font text-[#f5dc00] font-bold">100%</span>
                         </div>
-                        <input id="zoomSlider" type="range" min="0.5" max="2.8" step="0.01" value="1.0" aria-valuetext="100%">
+                        <div class="flex items-center gap-2">
+                            <button id="zoomOutBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0">−</button>
+                            <input id="zoomSlider" type="range" min="0.3" max="3.0" step="0.01" value="1.0" aria-valuetext="100%" class="flex-1">
+                            <button id="zoomInBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0">+</button>
+                        </div>
                     </div>
 
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <label for="rotateSlider" class="text-slate-400">Fine Rotate</label>
+                            <label for="rotateSlider" class="text-slate-400">Fine Tilt Angle</label>
                             <span id="rotateLabel" class="mono-font text-[#f5dc00] font-bold">0°</span>
                         </div>
                         <input id="rotateSlider" type="range" min="-15" max="15" step="0.1" value="0" aria-valuetext="0 degrees">
@@ -409,6 +466,84 @@
         </div>
     </dialog>
 
+    <!-- Interactive Photo Crop & Resize Modal Dialog -->
+    <dialog id="cropModal" class="w-full h-full bg-black/95 text-white">
+        <div class="w-full h-full flex flex-col items-center justify-between p-3 sm:p-4 select-none" style="padding-top: max(0.75rem, var(--safe-top)); padding-bottom: max(0.75rem, var(--safe-bottom));">
+            <!-- Modal Header -->
+            <div class="w-full max-w-2xl flex items-center justify-between py-1 gap-2">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="crop" class="w-4 h-4 text-[#f5dc00]"></i>
+                    <span class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">Pick Middle Photo Crop &amp; Resize</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="modalResetCropBtn" type="button" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition">
+                        Reset
+                    </button>
+                    <button id="closeCropModalBtn" type="button" class="px-4 py-1.5 rounded-full bg-[#f5dc00] hover:bg-yellow-300 text-slate-950 text-xs font-extrabold shadow transition">
+                        Done
+                    </button>
+                </div>
+            </div>
+
+            <!-- Source Switcher -->
+            <div class="w-full max-w-2xl grid grid-cols-2 gap-1.5 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-bold my-1.5">
+                <button type="button" data-photomode="extract_from_id" class="photo-mode-btn py-2 rounded-lg transition bg-[#f5dc00] text-slate-950 shadow">
+                    Aligned ID Card
+                </button>
+                <button type="button" data-photomode="portrait_fill" class="photo-mode-btn py-2 rounded-lg transition text-slate-400 hover:text-white">
+                    Full Original Photo
+                </button>
+            </div>
+
+            <!-- Interactive Crop Canvas Area -->
+            <div class="flex-1 w-full max-w-2xl flex flex-col items-center justify-center overflow-hidden my-1">
+                <div class="relative w-full h-full max-h-[58vh] rounded-2xl bg-[#090d14] border border-slate-800 flex items-center justify-center overflow-hidden">
+                    <canvas id="modalCropCanvas" width="720" height="580" style="touch-action: none;" class="max-w-full max-h-full w-auto h-auto block select-none cursor-crosshair"></canvas>
+                </div>
+                <p class="mt-1.5 text-[11px] text-slate-400 text-center">
+                    Drag inside the yellow box to move • Drag any corner or side handle to resize the crop area
+                </p>
+            </div>
+
+            <!-- Bottom Live Middle-Frame Preview & Controls -->
+            <div class="w-full max-w-2xl rounded-2xl bg-slate-900/95 border border-slate-800 p-3 flex items-center gap-3.5">
+                <div class="flex flex-col items-center shrink-0">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Middle Box</span>
+                    <canvas id="cropModalPreviewCanvas" width="150" height="193" class="w-16 h-20 rounded-lg border-2 border-[#f5dc00] bg-[#4aa8d8] shadow-md block"></canvas>
+                </div>
+
+                <div class="flex-1 space-y-2.5 min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button id="modalAspectLockBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-[#f5dc00]/15 border border-[#f5dc00] text-[#f5dc00] text-[11px] font-bold flex items-center gap-1 transition">
+                            <i data-lucide="lock" class="w-3 h-3"></i>
+                            <span id="modalAspectLockText">Lock Portrait Ratio: ON</span>
+                        </button>
+                        <button id="modalRotate90Btn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold flex items-center gap-1 transition">
+                            <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+                            <span>Rotate 90°</span>
+                        </button>
+                        <button id="modalUploadNewBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[11px] font-bold flex items-center gap-1 transition">
+                            <i data-lucide="image" class="w-3 h-3"></i>
+                            <span>Change Photo</span>
+                        </button>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400 font-semibold">Fine Scale / Zoom</span>
+                            <span id="modalZoomLabel" class="mono-font text-[#f5dc00] font-bold">100%</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="modalZoomOutBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0">−</button>
+                            <input id="modalZoomSlider" type="range" min="0.3" max="3.0" step="0.01" value="1.0" class="flex-1">
+                            <button id="modalZoomInBtn" type="button" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center shrink-0">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
     <!-- Offscreen Canvases for Crisp 1D Barcode Generation -->
     <div class="hidden">
         <canvas id="barcode39Canvas"></canvas>
@@ -445,9 +580,12 @@
             rotation: 0,
             panX: 0,
             panY: 0,
+            lockCropAspect: true,
 
             dissectedFullCard: { x: 0.1367, y: 0.2627, w: 0.5677, h: 0.6748 },
-            dissectedPortrait: { x: 0.2630, y: 0.3920, w: 0.4540, h: 0.3710 }
+            dissectedPortrait: { x: 0.2630, y: 0.3920, w: 0.4540, h: 0.3710 },
+            initialDissectedPortrait: { x: 0.2630, y: 0.3920, w: 0.4540, h: 0.3710 },
+            fullPhotoCrop: { x: 0.12, y: 0.10, w: 0.76, h: 0.80 }
         };
 
         const passCanvas = document.getElementById('passCanvas');
@@ -786,6 +924,57 @@
             targetCtx.restore();
         }
 
+        function getActiveSourceImage() {
+            if (!state.uploadedImage && !state.rawUploadedImage) return null;
+            if (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas) {
+                return state.rectifiedCardCanvas;
+            }
+            return state.rawUploadedImage || state.uploadedImage;
+        }
+
+        function getActiveCropBox() {
+            if (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas) {
+                return state.dissectedPortrait;
+            }
+            return state.fullPhotoCrop;
+        }
+
+        function setActiveCropBox(newBox) {
+            const clampedW = Math.max(0.05, Math.min(1.0, newBox.w));
+            const clampedH = Math.max(0.05, Math.min(1.0, newBox.h));
+            const clampedX = Math.max(0, Math.min(1.0 - clampedW, newBox.x));
+            const clampedY = Math.max(0, Math.min(1.0 - clampedH, newBox.y));
+            const normalized = { x: clampedX, y: clampedY, w: clampedW, h: clampedH };
+            if (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas) {
+                state.dissectedPortrait = normalized;
+            } else {
+                state.fullPhotoCrop = normalized;
+            }
+        }
+
+        function initDefaultFullPhotoCrop(img) {
+            if (!img) return;
+            const imgW = img.naturalWidth || img.width || 1;
+            const imgH = img.naturalHeight || img.height || 1;
+            const targetAspect = PORTRAIT_BOX.w / PORTRAIT_BOX.h;
+            const imgAspect = imgW / imgH;
+            let cw = 0.82;
+            let ch = 0.82;
+            if (imgAspect > targetAspect) {
+                ch = 0.84;
+                cw = Math.min(0.95, (ch * imgH * targetAspect) / imgW);
+            } else {
+                cw = 0.84;
+                ch = Math.min(0.95, (cw * imgW) / (targetAspect * imgH));
+            }
+            state.fullPhotoCrop = {
+                x: (1 - cw) / 2,
+                y: (1 - ch) / 2,
+                w: cw,
+                h: ch
+            };
+        }
+
         function drawPortraitIntoRect(targetCtx, portX, portY, portW, portH, showUploadHint = true) {
             const skyGrad = targetCtx.createLinearGradient(portX, portY, portX, portY + portH);
             skyGrad.addColorStop(0, '#67c7eb');
@@ -798,24 +987,22 @@
             targetCtx.rect(portX, portY, portW, portH);
             targetCtx.clip();
 
-            if (state.uploadedImage) {
-                const img = (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas)
-                    ? state.rectifiedCardCanvas
-                    : (state.rawUploadedImage || state.uploadedImage);
-                let sx = 0, sy = 0, sw = img.width, sh = img.height;
-
-                if (state.photoMode === 'extract_from_id') {
-                    sx = img.width * state.dissectedPortrait.x;
-                    sy = img.height * state.dissectedPortrait.y;
-                    sw = img.width * state.dissectedPortrait.w;
-                    sh = img.height * state.dissectedPortrait.h;
-                }
+            const img = getActiveSourceImage();
+            if (img) {
+                const cropBox = getActiveCropBox();
+                const sx = img.width * cropBox.x;
+                const sy = img.height * cropBox.y;
+                const sw = Math.max(1, img.width * cropBox.w);
+                const sh = Math.max(1, img.height * cropBox.h);
 
                 const srcRatio = sw / sh;
                 const dstRatio = portW / portH;
                 let drawW = portW;
                 let drawH = portH;
-                if (srcRatio > dstRatio) {
+                if (state.lockCropAspect === false) {
+                    drawW = portW;
+                    drawH = portH;
+                } else if (srcRatio > dstRatio) {
                     drawH = portH;
                     drawW = portH * srcRatio;
                 } else {
@@ -831,13 +1018,21 @@
                     portY + portH / 2 + state.panY * scaleY
                 );
                 targetCtx.rotate((state.rotation * Math.PI) / 180);
+
+                // Map the full source image so zooming out (<100%) or panning reveals surrounding photo pixels instead of clipping to sky blue
+                const zoomedW = drawW * state.zoom;
+                const zoomedH = drawH * state.zoom;
+                const scalePxX = zoomedW / sw;
+                const scalePxY = zoomedH / sh;
+                const fullDx = -zoomedW / 2 - sx * scalePxX;
+                const fullDy = -zoomedH / 2 - sy * scalePxY;
+                const fullDw = img.width * scalePxX;
+                const fullDh = img.height * scalePxY;
+
                 targetCtx.drawImage(
                     img,
-                    sx, sy, sw, sh,
-                    (-drawW / 2) * state.zoom,
-                    (-drawH / 2) * state.zoom,
-                    drawW * state.zoom,
-                    drawH * state.zoom
+                    0, 0, img.width, img.height,
+                    fullDx, fullDy, fullDw, fullDh
                 );
             } else {
                 const scale = portW / PORTRAIT_BOX.w;
@@ -1055,7 +1250,142 @@
                 ctx.restore();
             }
 
-                    }
+            const quickBar = document.getElementById('quickResizeBar');
+            if (quickBar) {
+                if (state.uploadedImage || state.rawUploadedImage) {
+                    quickBar.classList.remove('hidden');
+                    quickBar.classList.add('flex');
+                } else {
+                    quickBar.classList.add('hidden');
+                    quickBar.classList.remove('flex');
+                }
+            }
+
+            updateDetectedPreviewThumb();
+            renderAllCropCanvases();
+        }
+
+        function updateDetectedPreviewThumb() {
+            const thumb = document.getElementById('detectedPortraitThumbCanvas');
+            if (thumb && (state.uploadedImage || state.rawUploadedImage)) {
+                const tCtx = thumb.getContext('2d');
+                tCtx.clearRect(0, 0, thumb.width, thumb.height);
+                drawPortraitIntoRect(tCtx, 0, 0, thumb.width, thumb.height, false);
+            }
+            const modalPrev = document.getElementById('cropModalPreviewCanvas');
+            if (modalPrev) {
+                const mCtx = modalPrev.getContext('2d');
+                mCtx.clearRect(0, 0, modalPrev.width, modalPrev.height);
+                drawPortraitIntoRect(mCtx, 0, 0, modalPrev.width, modalPrev.height, false);
+            }
+        }
+
+        function getCropCanvasImageRect(canvas, img) {
+            const cw = canvas.width;
+            const ch = canvas.height;
+            const pad = 22;
+            const availW = Math.max(40, cw - pad * 2);
+            const availH = Math.max(40, ch - pad * 2);
+            const imgW = img.naturalWidth || img.width || 1;
+            const imgH = img.naturalHeight || img.height || 1;
+            const scale = Math.min(availW / imgW, availH / imgH);
+            const drawW = imgW * scale;
+            const drawH = imgH * scale;
+            const drawX = (cw - drawW) / 2;
+            const drawY = (ch - drawH) / 2;
+            return { drawX, drawY, drawW, drawH, imgW, imgH, scale };
+        }
+
+        function renderCropSelectorOnCanvas(canvas) {
+            if (!canvas) return;
+            const cCtx = canvas.getContext('2d');
+            const cw = canvas.width;
+            const ch = canvas.height;
+            cCtx.clearRect(0, 0, cw, ch);
+            cCtx.fillStyle = '#090d14';
+            cCtx.fillRect(0, 0, cw, ch);
+
+            const img = getActiveSourceImage();
+            if (!img) {
+                cCtx.fillStyle = '#1e293b';
+                roundRectPath(cCtx, 24, 24, cw - 48, ch - 48, 18);
+                cCtx.fill();
+                cCtx.fillStyle = '#f5dc00';
+                cCtx.font = '800 16px Inter, sans-serif';
+                cCtx.textAlign = 'center';
+                cCtx.fillText('UPLOAD OR SCAN A PHOTO FIRST', cw / 2, ch / 2 - 6);
+                cCtx.fillStyle = '#94a3b8';
+                cCtx.font = '600 13px Inter, sans-serif';
+                cCtx.fillText('Tap here to pick a photo from your library or camera', cw / 2, ch / 2 + 18);
+                return;
+            }
+
+            const { drawX, drawY, drawW, drawH } = getCropCanvasImageRect(canvas, img);
+
+            // 1. Draw darkened full source image
+            cCtx.drawImage(img, drawX, drawY, drawW, drawH);
+            cCtx.fillStyle = 'rgba(6, 10, 18, 0.62)';
+            cCtx.fillRect(drawX, drawY, drawW, drawH);
+
+            // 2. Compute crop box rectangle in canvas coordinates
+            const cropBox = getActiveCropBox();
+            const bx = drawX + cropBox.x * drawW;
+            const by = drawY + cropBox.y * drawH;
+            const bw = Math.max(16, cropBox.w * drawW);
+            const bh = Math.max(16, cropBox.h * drawH);
+
+            // 3. Draw bright un-darkened image inside the selected crop box
+            cCtx.save();
+            cCtx.beginPath();
+            cCtx.rect(bx, by, bw, bh);
+            cCtx.clip();
+            cCtx.drawImage(img, drawX, drawY, drawW, drawH);
+
+            // Rule-of-thirds alignment grid inside crop box
+            cCtx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
+            cCtx.lineWidth = 1;
+            cCtx.beginPath();
+            cCtx.moveTo(bx + bw / 3, by);
+            cCtx.lineTo(bx + bw / 3, by + bh);
+            cCtx.moveTo(bx + (bw * 2) / 3, by);
+            cCtx.lineTo(bx + (bw * 2) / 3, by + bh);
+            cCtx.moveTo(bx, by + bh / 3);
+            cCtx.lineTo(bx + bw, by + bh / 3);
+            cCtx.moveTo(bx, by + (bh * 2) / 3);
+            cCtx.lineTo(bx + bw, by + (bh * 2) / 3);
+            cCtx.stroke();
+            cCtx.restore();
+
+            // 4. Yellow crop frame border
+            cCtx.strokeStyle = '#f5dc00';
+            cCtx.lineWidth = 3;
+            cCtx.strokeRect(bx, by, bw, bh);
+
+            // 5. Draw 8 interactive resize handles (4 corners + 4 mid-sides)
+            const handlePts = [
+                { id: 'nw', x: bx, y: by },
+                { id: 'n',  x: bx + bw / 2, y: by },
+                { id: 'ne', x: bx + bw, y: by },
+                { id: 'e',  x: bx + bw, y: by + bh / 2 },
+                { id: 'se', x: bx + bw, y: by + bh },
+                { id: 's',  x: bx + bw / 2, y: by + bh },
+                { id: 'sw', x: bx, y: by + bh },
+                { id: 'w',  x: bx, y: by + bh / 2 }
+            ];
+            const hs = 7;
+            for (const hPt of handlePts) {
+                cCtx.fillStyle = '#f5dc00';
+                cCtx.fillRect(hPt.x - hs, hPt.y - hs, hs * 2, hs * 2);
+                cCtx.strokeStyle = '#090d14';
+                cCtx.lineWidth = 2;
+                cCtx.strokeRect(hPt.x - hs, hPt.y - hs, hs * 2, hs * 2);
+            }
+        }
+
+        function renderAllCropCanvases() {
+            renderCropSelectorOnCanvas(document.getElementById('inlineCropCanvas'));
+            renderCropSelectorOnCanvas(document.getElementById('modalCropCanvas'));
+        }
 
         function syncInputsFromState() {
             document.getElementById('firstNameInput').value = state.firstName;
@@ -1072,6 +1402,26 @@
                     btn.className = 'photo-mode-btn py-2 rounded-lg transition bg-[#f5dc00] text-slate-950 shadow';
                 } else {
                     btn.className = 'photo-mode-btn py-2 rounded-lg transition text-slate-400 hover:text-white';
+                }
+            });
+            renderAllCropCanvases();
+        }
+
+        function syncAspectLockUI() {
+            const locked = state.lockCropAspect !== false;
+            const inlineBtn = document.getElementById('toggleAspectLockBtn');
+            const inlineTxt = document.getElementById('aspectLockBtnText');
+            const modalBtn = document.getElementById('modalAspectLockBtn');
+            const modalTxt = document.getElementById('modalAspectLockText');
+            const label = locked ? 'Lock Portrait Ratio: ON' : 'Free Resize Crop: ON';
+            if (inlineTxt) inlineTxt.textContent = label;
+            if (modalTxt) modalTxt.textContent = label;
+            [inlineBtn, modalBtn].forEach(btn => {
+                if (!btn) return;
+                if (locked) {
+                    btn.className = 'px-2.5 py-1.5 rounded-xl bg-[#f5dc00]/15 border border-[#f5dc00] text-[#f5dc00] text-[11px] font-bold flex items-center gap-1.5 transition';
+                } else {
+                    btn.className = 'px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-600 text-slate-200 text-[11px] font-bold flex items-center gap-1.5 transition';
                 }
             });
         }
@@ -1100,12 +1450,25 @@
 
         function syncSlidersUI() {
             const zoomSlider = document.getElementById('zoomSlider');
+            const quickZoomSlider = document.getElementById('quickZoomSlider');
+            const modalZoomSlider = document.getElementById('modalZoomSlider');
             const rotateSlider = document.getElementById('rotateSlider');
+            const zoomText = `${Math.round(state.zoom * 100)}%`;
+
             if (zoomSlider) {
                 zoomSlider.value = state.zoom;
-                const zoomText = `${Math.round(state.zoom * 100)}%`;
                 document.getElementById('zoomLabel').textContent = zoomText;
                 zoomSlider.setAttribute('aria-valuetext', zoomText);
+            }
+            if (quickZoomSlider) {
+                quickZoomSlider.value = state.zoom;
+                const qLbl = document.getElementById('quickZoomLabel');
+                if (qLbl) qLbl.textContent = zoomText;
+            }
+            if (modalZoomSlider) {
+                modalZoomSlider.value = state.zoom;
+                const mLbl = document.getElementById('modalZoomLabel');
+                if (mLbl) mLbl.textContent = zoomText;
             }
             if (rotateSlider) {
                 rotateSlider.value = state.rotation;
@@ -1113,6 +1476,7 @@
                 document.getElementById('rotateLabel').textContent = rotText;
                 rotateSlider.setAttribute('aria-valuetext', rotText);
             }
+            syncAspectLockUI();
         }
 
         function normalizeImageForStorage(img, maxDim = 1600) {
@@ -2021,12 +2385,14 @@
                 state.lastDetectedPose = pose;
                 state.rectifiedCardCanvas = rectCanvas;
                 state.uploadedImage = rectCanvas;
-                state.dissectedPortrait = {
+                const detectedCrop = {
                     x: pb.leftU,
                     y: pb.topV,
                     w: Math.max(0.20, pb.rightU - pb.leftU),
                     h: Math.max(0.20, pb.botV - pb.topV)
                 };
+                state.dissectedPortrait = { ...detectedCrop };
+                state.initialDissectedPortrait = { ...detectedCrop };
                 state.photoMode = 'extract_from_id';
                 syncPhotoModeButtons();
                 updateDetectedPreviewBar(rectCanvas, pb, pose);
@@ -2112,6 +2478,7 @@
             state.rotation = 0;
             state.panX = 0;
             state.panY = 0;
+            initDefaultFullPhotoCrop(finalImg);
             syncSlidersUI();
 
             document.getElementById('uploadBtnText').textContent = 'Change Photo';
@@ -2204,6 +2571,7 @@
             } else if (activeTab === 'photo') {
                 tabPhotoBtn.className = 'tab-btn py-2 rounded-xl transition bg-[#f5dc00] text-slate-950 shadow';
                 tabPhotoSection.classList.remove('hidden');
+                renderAllCropCanvases();
             } else if (activeTab === 'options') {
                 tabOptionsBtn.className = 'tab-btn py-2 rounded-xl transition bg-[#f5dc00] text-slate-950 shadow';
                 tabOptionsSection.classList.remove('hidden');
@@ -2305,14 +2673,36 @@
         });
 
         const zoomSlider = document.getElementById('zoomSlider');
+        const quickZoomSlider = document.getElementById('quickZoomSlider');
+        const modalZoomSlider = document.getElementById('modalZoomSlider');
         const rotateSlider = document.getElementById('rotateSlider');
         const barHeightSlider = document.getElementById('barHeightSlider');
 
-        zoomSlider.addEventListener('input', (e) => {
-            state.zoom = parseFloat(e.target.value);
+        function applyZoomValue(newZoom) {
+            state.zoom = Math.max(0.3, Math.min(3.0, Number(newZoom.toFixed(2))));
             syncSlidersUI();
             renderPass();
+        }
+
+        if (zoomSlider) {
+            zoomSlider.addEventListener('input', (e) => applyZoomValue(parseFloat(e.target.value)));
+        }
+        if (quickZoomSlider) {
+            quickZoomSlider.addEventListener('input', (e) => applyZoomValue(parseFloat(e.target.value)));
+        }
+        if (modalZoomSlider) {
+            modalZoomSlider.addEventListener('input', (e) => applyZoomValue(parseFloat(e.target.value)));
+        }
+
+        ['zoomOutBtn', 'quickZoomOutBtn', 'modalZoomOutBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', () => applyZoomValue(state.zoom - 0.1));
         });
+        ['zoomInBtn', 'quickZoomInBtn', 'modalZoomInBtn'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.addEventListener('click', () => applyZoomValue(state.zoom + 0.1));
+        });
+
         rotateSlider.addEventListener('input', (e) => {
             state.rotation = parseFloat(e.target.value);
             syncSlidersUI();
@@ -2325,23 +2715,405 @@
             renderPass();
         });
 
-        document.getElementById('resetCropBtn').addEventListener('click', () => {
+        function toggleCropAspectLock() {
+            state.lockCropAspect = !state.lockCropAspect;
+            if (state.lockCropAspect) {
+                const img = getActiveSourceImage();
+                if (img) {
+                    const box = getActiveCropBox();
+                    const imgW = img.naturalWidth || img.width || 1;
+                    const imgH = img.naturalHeight || img.height || 1;
+                    const normAspect = (PORTRAIT_BOX.w / PORTRAIT_BOX.h) * (imgH / imgW);
+                    const cx = box.x + box.w / 2;
+                    const cy = box.y + box.h / 2;
+                    let nw = box.w;
+                    let nh = nw / normAspect;
+                    if (nh > 0.96) {
+                        nh = 0.96;
+                        nw = nh * normAspect;
+                    }
+                    if (nw > 0.96) {
+                        nw = 0.96;
+                        nh = nw / normAspect;
+                    }
+                    setActiveCropBox({ x: cx - nw / 2, y: cy - nh / 2, w: nw, h: nh });
+                }
+            }
+            syncAspectLockUI();
+            renderPass();
+        }
+
+        const toggleAspectLockBtn = document.getElementById('toggleAspectLockBtn');
+        if (toggleAspectLockBtn) toggleAspectLockBtn.addEventListener('click', toggleCropAspectLock);
+        const modalAspectLockBtn = document.getElementById('modalAspectLockBtn');
+        if (modalAspectLockBtn) modalAspectLockBtn.addEventListener('click', toggleCropAspectLock);
+
+        function rotateActiveSourceImage90() {
+            const img = getActiveSourceImage();
+            if (!img) {
+                showStatusToast('Upload or scan a photo first', false, 1800);
+                return;
+            }
+            const srcW = img.naturalWidth || img.width;
+            const srcH = img.naturalHeight || img.height;
+            const rotC = document.createElement('canvas');
+            rotC.width = srcH;
+            rotC.height = srcW;
+            const rCtx = rotC.getContext('2d');
+            rCtx.translate(rotC.width / 2, rotC.height / 2);
+            rCtx.rotate(Math.PI / 2);
+            rCtx.drawImage(img, -srcW / 2, -srcH / 2);
+
+            if (state.photoMode === 'extract_from_id' && state.rectifiedCardCanvas) {
+                state.rectifiedCardCanvas = rotC;
+                state.uploadedImage = rotC;
+                const old = state.dissectedPortrait;
+                state.dissectedPortrait = {
+                    x: 1 - (old.y + old.h),
+                    y: old.x,
+                    w: old.h,
+                    h: old.w
+                };
+            } else {
+                state.rawUploadedImage = rotC;
+                state.uploadedImage = rotC;
+                const old = state.fullPhotoCrop;
+                state.fullPhotoCrop = {
+                    x: 1 - (old.y + old.h),
+                    y: old.x,
+                    w: old.h,
+                    h: old.w
+                };
+            }
+            state.panX = 0;
+            state.panY = 0;
+            renderPass();
+            showStatusToast('Rotated photo 90°', false, 1400);
+        }
+
+        const rotate90Btn = document.getElementById('rotate90Btn');
+        if (rotate90Btn) rotate90Btn.addEventListener('click', rotateActiveSourceImage90);
+        const modalRotate90Btn = document.getElementById('modalRotate90Btn');
+        if (modalRotate90Btn) modalRotate90Btn.addEventListener('click', rotateActiveSourceImage90);
+
+        function resetCropAndAlignment() {
             state.zoom = 1.0;
             state.rotation = 0;
             state.panX = 0;
             state.panY = 0;
+            state.lockCropAspect = true;
+            if (state.initialDissectedPortrait) {
+                state.dissectedPortrait = { ...state.initialDissectedPortrait };
+            }
+            if (state.rawUploadedImage) {
+                initDefaultFullPhotoCrop(state.rawUploadedImage);
+            }
             syncSlidersUI();
             renderPass();
-            showStatusToast('Alignment reset', false, 1500);
+            showStatusToast('Crop & zoom reset', false, 1500);
+        }
+
+        document.getElementById('resetCropBtn').addEventListener('click', resetCropAndAlignment);
+        const modalResetCropBtn = document.getElementById('modalResetCropBtn');
+        if (modalResetCropBtn) modalResetCropBtn.addEventListener('click', resetCropAndAlignment);
+
+        // Crop Modal Open / Close
+        const cropModal = document.getElementById('cropModal');
+        function openCropModal() {
+            if (!state.uploadedImage && !state.rawUploadedImage) {
+                switchTab('photo');
+                const upInput = document.getElementById('photoUploadInput');
+                if (upInput) upInput.click();
+                return;
+            }
+            if (cropModal) {
+                if (typeof cropModal.showModal === 'function') {
+                    if (!cropModal.open) cropModal.showModal();
+                } else {
+                    cropModal.setAttribute('open', '');
+                }
+                renderAllCropCanvases();
+                updateDetectedPreviewThumb();
+            }
+        }
+        function closeCropModal() {
+            if (cropModal) {
+                if (typeof cropModal.close === 'function' && cropModal.open) {
+                    cropModal.close();
+                } else {
+                    cropModal.removeAttribute('open');
+                }
+            }
+        }
+
+        ['openCropModalBtn', 'quickPickCropBtn', 'bannerCropBtn', 'expandCropModalBtn', 'detectedPortraitThumbCanvas'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', openCropModal);
         });
+        const closeCropModalBtn = document.getElementById('closeCropModalBtn');
+        if (closeCropModalBtn) closeCropModalBtn.addEventListener('click', closeCropModal);
+        const modalUploadNewBtn = document.getElementById('modalUploadNewBtn');
+        if (modalUploadNewBtn) {
+            modalUploadNewBtn.addEventListener('click', () => {
+                const upInput = document.getElementById('photoUploadInput');
+                if (upInput) upInput.click();
+            });
+        }
+
+        // Interactive Crop Selector Canvas Pointer & Touch Controller (Supports Move + 8-Handle Resize + Draw New Box + Wheel/Pinch)
+        function setupInteractiveCropCanvas(canvas) {
+            if (!canvas) return;
+            let action = null; // 'move' | 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'create'
+            let startPt = { x: 0, y: 0 };
+            let startBox = null;
+            let cropPinching = false;
+            let cropPinchDist0 = 0;
+            let cropPinchBox0 = null;
+
+            function getCanvasCoords(clientX, clientY) {
+                const rect = canvas.getBoundingClientRect();
+                const sx = canvas.width / Math.max(1, rect.width);
+                const sy = canvas.height / Math.max(1, rect.height);
+                return {
+                    x: (clientX - rect.left) * sx,
+                    y: (clientY - rect.top) * sy
+                };
+            }
+
+            function hitTestCropHandles(pt, img) {
+                const { drawX, drawY, drawW, drawH } = getCropCanvasImageRect(canvas, img);
+                const box = getActiveCropBox();
+                const bx = drawX + box.x * drawW;
+                const by = drawY + box.y * drawH;
+                const bw = box.w * drawW;
+                const bh = box.h * drawH;
+
+                const handles = [
+                    { id: 'nw', x: bx, y: by, cursor: 'nwse-resize' },
+                    { id: 'ne', x: bx + bw, y: by, cursor: 'nesw-resize' },
+                    { id: 'se', x: bx + bw, y: by + bh, cursor: 'nwse-resize' },
+                    { id: 'sw', x: bx, y: by + bh, cursor: 'nesw-resize' },
+                    { id: 'n',  x: bx + bw / 2, y: by, cursor: 'ns-resize' },
+                    { id: 'e',  x: bx + bw, y: by + bh / 2, cursor: 'ew-resize' },
+                    { id: 's',  x: bx + bw / 2, y: by + bh, cursor: 'ns-resize' },
+                    { id: 'w',  x: bx, y: by + bh / 2, cursor: 'ew-resize' }
+                ];
+                const hitRadius = 20;
+                for (const h of handles) {
+                    if (Math.hypot(pt.x - h.x, pt.y - h.y) <= hitRadius) {
+                        return h;
+                    }
+                }
+                if (pt.x >= bx && pt.x <= bx + bw && pt.y >= by && pt.y <= by + bh) {
+                    return { id: 'move', cursor: 'move' };
+                }
+                return { id: 'create', cursor: 'crosshair' };
+            }
+
+            function applyCropDrag(pt) {
+                const img = getActiveSourceImage();
+                if (!img || !action || !startBox) return;
+                const { drawX, drawY, drawW, drawH, imgW, imgH } = getCropCanvasImageRect(canvas, img);
+                const dx = (pt.x - startPt.x) / Math.max(1, drawW);
+                const dy = (pt.y - startPt.y) / Math.max(1, drawH);
+                const normAspect = (PORTRAIT_BOX.w / PORTRAIT_BOX.h) * (imgH / imgW);
+                const minSize = 0.06;
+
+                let nx = startBox.x;
+                let ny = startBox.y;
+                let nw = startBox.w;
+                let nh = startBox.h;
+
+                if (action === 'move') {
+                    nx = Math.max(0, Math.min(1 - nw, startBox.x + dx));
+                    ny = Math.max(0, Math.min(1 - nh, startBox.y + dy));
+                } else if (action === 'create') {
+                    const u0 = Math.max(0, Math.min(1, (startPt.x - drawX) / Math.max(1, drawW)));
+                    const v0 = Math.max(0, Math.min(1, (startPt.y - drawY) / Math.max(1, drawH)));
+                    const u1 = Math.max(0, Math.min(1, (pt.x - drawX) / Math.max(1, drawW)));
+                    const v1 = Math.max(0, Math.min(1, (pt.y - drawY) / Math.max(1, drawH)));
+                    nx = Math.min(u0, u1);
+                    ny = Math.min(v0, v1);
+                    nw = Math.max(minSize, Math.abs(u1 - u0));
+                    nh = state.lockCropAspect ? (nw / normAspect) : Math.max(minSize, Math.abs(v1 - v0));
+                } else {
+                    let left = startBox.x;
+                    let right = startBox.x + startBox.w;
+                    let top = startBox.y;
+                    let bottom = startBox.y + startBox.h;
+
+                    if (action.includes('w')) left = Math.max(0, Math.min(right - minSize, left + dx));
+                    if (action.includes('e')) right = Math.min(1, Math.max(left + minSize, right + dx));
+                    if (action.includes('n')) top = Math.max(0, Math.min(bottom - minSize, top + dy));
+                    if (action.includes('s')) bottom = Math.min(1, Math.max(top + minSize, bottom + dy));
+
+                    nw = right - left;
+                    nh = bottom - top;
+                    nx = left;
+                    ny = top;
+
+                    if (state.lockCropAspect) {
+                        if (action === 'n' || action === 's') {
+                            nw = nh * normAspect;
+                            const centerX = startBox.x + startBox.w / 2;
+                            nx = centerX - nw / 2;
+                        } else if (action === 'e' || action === 'w') {
+                            nh = nw / normAspect;
+                            const centerY = startBox.y + startBox.h / 2;
+                            ny = centerY - nh / 2;
+                        } else {
+                            // Corner handle with aspect lock
+                            nh = nw / normAspect;
+                            if (action.includes('n')) {
+                                ny = bottom - nh;
+                            }
+                        }
+                        if (nw > 1) {
+                            nw = 1;
+                            nh = nw / normAspect;
+                        }
+                        if (nh > 1) {
+                            nh = 1;
+                            nw = nh * normAspect;
+                        }
+                        nx = Math.max(0, Math.min(1 - nw, nx));
+                        ny = Math.max(0, Math.min(1 - nh, ny));
+                    }
+                }
+
+                setActiveCropBox({ x: nx, y: ny, w: nw, h: nh });
+                state.panX = 0;
+                state.panY = 0;
+                renderPass();
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                const img = getActiveSourceImage();
+                if (!img) {
+                    const upInput = document.getElementById('photoUploadInput');
+                    if (upInput) upInput.click();
+                    return;
+                }
+                const pt = getCanvasCoords(e.clientX, e.clientY);
+                const hit = hitTestCropHandles(pt, img);
+                action = hit.id;
+                startPt = pt;
+                startBox = { ...getActiveCropBox() };
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                const img = getActiveSourceImage();
+                if (!img) return;
+                if (action) {
+                    const pt = getCanvasCoords(e.clientX, e.clientY);
+                    applyCropDrag(pt);
+                } else {
+                    const rect = canvas.getBoundingClientRect();
+                    if (
+                        e.clientX >= rect.left && e.clientX <= rect.right &&
+                        e.clientY >= rect.top && e.clientY <= rect.bottom
+                    ) {
+                        const pt = getCanvasCoords(e.clientX, e.clientY);
+                        const hit = hitTestCropHandles(pt, img);
+                        canvas.style.cursor = hit.cursor || 'crosshair';
+                    }
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                action = null;
+                startBox = null;
+            });
+
+            canvas.addEventListener('touchstart', (e) => {
+                const img = getActiveSourceImage();
+                if (!img) {
+                    const upInput = document.getElementById('photoUploadInput');
+                    if (upInput) upInput.click();
+                    return;
+                }
+                if (e.touches.length === 2) {
+                    e.preventDefault();
+                    action = null;
+                    cropPinching = true;
+                    cropPinchDist0 = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    cropPinchBox0 = { ...getActiveCropBox() };
+                    return;
+                }
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    const pt = getCanvasCoords(e.touches[0].clientX, e.touches[0].clientY);
+                    const hit = hitTestCropHandles(pt, img);
+                    action = hit.id;
+                    startPt = pt;
+                    startBox = { ...getActiveCropBox() };
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (cropPinching && e.touches.length === 2 && cropPinchBox0) {
+                    e.preventDefault();
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    if (cropPinchDist0 > 10) {
+                        const scaleFactor = cropPinchDist0 / Math.max(10, dist);
+                        const cx = cropPinchBox0.x + cropPinchBox0.w / 2;
+                        const cy = cropPinchBox0.y + cropPinchBox0.h / 2;
+                        const nw = Math.max(0.08, Math.min(1.0, cropPinchBox0.w * scaleFactor));
+                        const nh = Math.max(0.08, Math.min(1.0, cropPinchBox0.h * scaleFactor));
+                        setActiveCropBox({ x: cx - nw / 2, y: cy - nh / 2, w: nw, h: nh });
+                        state.panX = 0;
+                        state.panY = 0;
+                        renderPass();
+                    }
+                    return;
+                }
+                if (action && e.touches.length === 1) {
+                    e.preventDefault();
+                    const pt = getCanvasCoords(e.touches[0].clientX, e.touches[0].clientY);
+                    applyCropDrag(pt);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', () => {
+                action = null;
+                startBox = null;
+                cropPinching = false;
+                cropPinchBox0 = null;
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                const img = getActiveSourceImage();
+                if (!img) return;
+                e.preventDefault();
+                const box = getActiveCropBox();
+                const factor = e.deltaY > 0 ? 1.06 : 0.94;
+                const cx = box.x + box.w / 2;
+                const cy = box.y + box.h / 2;
+                const nw = Math.max(0.08, Math.min(1.0, box.w * factor));
+                const nh = Math.max(0.08, Math.min(1.0, box.h * factor));
+                setActiveCropBox({ x: cx - nw / 2, y: cy - nh / 2, w: nw, h: nh });
+                state.panX = 0;
+                state.panY = 0;
+                renderPass();
+            }, { passive: false });
+        }
+
+        setupInteractiveCropCanvas(document.getElementById('inlineCropCanvas'));
+        setupInteractiveCropCanvas(document.getElementById('modalCropCanvas'));
 
         document.getElementById('removePhotoBtn').addEventListener('click', () => {
             state.uploadedImage = null;
             state.rawUploadedImage = null;
             state.rectifiedCardCanvas = null;
             state.lastDetectedPose = null;
-            document.getElementById('uploadBtnText').textContent = 'Photos / HEIC';
-            const sbt = document.getElementById('scanBtnText'); if (sbt) sbt.textContent = 'Scan ID with Camera';
+            document.getElementById('uploadBtnText').textContent = 'Upload from Photos / HEIC';
+            const sbt = document.getElementById('scanBtnText'); if (sbt) sbt.textContent = 'Scan ID Card';
             const rsb = document.getElementById('rescanPhotoTextBtn'); if (rsb) rsb.classList.add('hidden');
             const previewBar = document.getElementById('detectedCardPreviewBar');
             const badge = document.getElementById('detectedPoseBadge');
@@ -2354,7 +3126,7 @@
             showStatusToast('Photo removed', false, 1500);
         });
 
-        // Touch & Drag Handling on Canvas
+        // Touch, Drag, Wheel Resize & Double-Click Crop on Main ID Card Canvas
         let dragging = false, startX = 0, startY = 0, initX = 0, initY = 0;
         let pinching = false, initialPinchDist = 0, initialPinchZoom = 1.0;
         let tapCandidate = null;
@@ -2394,8 +3166,8 @@
             if (!dragging) return;
             const rect = passCanvas.getBoundingClientRect();
             const scale = passCanvas.width / rect.width;
-            state.panX = Math.max(-350, Math.min(350, initX + (clientX - startX) * scale));
-            state.panY = Math.max(-350, Math.min(350, initY + (clientY - startY) * scale));
+            state.panX = Math.max(-450, Math.min(450, initX + (clientX - startX) * scale));
+            state.panY = Math.max(-450, Math.min(450, initY + (clientY - startY) * scale));
             renderPass();
         }
 
@@ -2406,6 +3178,20 @@
                 startDrag(e.clientX, e.clientY);
             }
         });
+        passCanvas.addEventListener('dblclick', (e) => {
+            const { cx, cy } = clientToCanvasCoords(e.clientX, e.clientY);
+            if (isInsidePortraitArea(cx, cy)) {
+                openCropModal();
+            }
+        });
+        passCanvas.addEventListener('wheel', (e) => {
+            const { cx, cy } = clientToCanvasCoords(e.clientX, e.clientY);
+            if (state.uploadedImage && isInsidePortraitArea(cx, cy)) {
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.06 : -0.06;
+                applyZoomValue(state.zoom + delta);
+            }
+        }, { passive: false });
         window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
         window.addEventListener('mouseup', (e) => {
             if (dragging) dragging = false;
@@ -2452,7 +3238,7 @@
                 );
                 if (initialPinchDist > 10) {
                     const ratio = dist / initialPinchDist;
-                    state.zoom = Math.max(0.5, Math.min(2.8, Number((initialPinchZoom * ratio).toFixed(2))));
+                    state.zoom = Math.max(0.3, Math.min(3.0, Number((initialPinchZoom * ratio).toFixed(2))));
                     syncSlidersUI();
                     renderPass();
                 }
@@ -3001,7 +3787,9 @@
             const gradeNum = (state.grade && String(state.grade).trim()) ? String(state.grade).trim() : '';
             const safeLast = (state.lastName || 'Student').replace(/[^a-z0-9]/gi, '_');
 
-            const currentFingerprint = `${idCode}|${fullName}|${rawYear}|${gradeNum}|${state.uploadedImage ? 'photo' : 'nophoto'}|${state.walletBarcodeFormat || 'Code128'}|v4`;
+            const activeCrop = getActiveCropBox();
+            const cropSig = activeCrop ? `${activeCrop.x.toFixed(4)},${activeCrop.y.toFixed(4)},${activeCrop.w.toFixed(4)},${activeCrop.h.toFixed(4)}` : 'nocrop';
+            const currentFingerprint = `${idCode}|${fullName}|${rawYear}|${gradeNum}|${state.uploadedImage ? 'photo' : 'nophoto'}|${state.photoMode}|${cropSig}|${state.zoom}|${state.panX}|${state.panY}|${state.rotation}|${state.lockCropAspect}|${state.walletBarcodeFormat || 'Code128'}|v5`;
 
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -3333,7 +4121,9 @@
             syncPhotoModeButtons();
             syncBarcodeModeButtons();
             syncWalletFormatButtons();
+            syncSlidersUI();
             updateBarcodes();
+            renderAllCropCanvases();
         });
     </script>
 </body>
